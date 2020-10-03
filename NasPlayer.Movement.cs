@@ -62,15 +62,17 @@ namespace NotAwesomeSurvival {
             if (hasBeenSpawned) { return; }
             atBorder = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
+            
+	        spawnPos = new Position(location.X, location.Y, location.Z);
+	        yaw = this.yaw;
+	        pitch = this.pitch;
+	        Logger.Log(LogType.Debug, "Teleporting "+p.name+"!");
+            
 		    if (level.name != levelName) {
 		        //goto will call OnPlayerSpawning again to complete the spawn
 		        Command.Find("goto").Use(p, levelName);
 		        return;
 		    }
-	        spawnPos = new Position(location.X, location.Y, location.Z);
-	        yaw = this.yaw;
-	        pitch = this.pitch;
-	        Logger.Log(LogType.Debug, "Teleporting "+p.name+"!");
 	        hasBeenSpawned = true;
         }
         
