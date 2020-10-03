@@ -1,0 +1,13 @@
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\obj\Release\nas.csprojResolveAssemblyReference.cache
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\mcf.sh
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\Changelog.txt
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\LICENSE.txt
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\sqlite3_x32.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\sqlite3_x64.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\README.md
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\nas.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\MCGalaxy_.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\MySql.Data.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\bin\Release\MCGalaxy_.pdb
+C:\Users\Zack\Documents\GitHub\MCGalaxy\nas\obj\Release\nas.dll
+C:\Users\Zack\Documents\GitHub\MCGalaxy\bin\Release\plugins\nas.dll
