@@ -1,0 +1,13 @@
+
+bin/Release/Changelog.txt
+bin/Release/LICENSE.txt
+bin/Release/mcf.sh
+bin/Release/MCGalaxy_.dll
+bin/Release/MCGalaxy_.pdb
+bin/Release/MySql.Data.dll
+bin/Release/nas.dll
+bin/Release/README.md
+bin/Release/sqlite3_x32.dll
+bin/Release/sqlite3_x64.dll
+obj/Release/nas.dll
+obj/Release/nas.dll

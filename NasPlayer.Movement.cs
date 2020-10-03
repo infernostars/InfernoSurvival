@@ -36,41 +36,41 @@ namespace NotAwesomeSurvival {
         static void OnPlayerSpawning(Player p, ref Position pos, ref byte yaw, ref byte pitch, bool respawning) {
             if (respawning) { return; }
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
-            np.SpawnPlayer(p.level);
+            np.SpawnPlayer(p.level, ref pos, ref yaw, ref pitch);
         }
         
-        public void SpawnPlayer(Level level) {
+        public void SpawnPlayer(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
 		    if (level.Config.Deletable && level.Config.Buildable) { return; } //not a nas map
 		    
 		    Logger.Log("SpawnPlayer");
 		    
 		    inventory.Setup();
-		    if (!hasBeenSpawned) { SpawnPlayerFirstTime(level); return; }
+		    if (!hasBeenSpawned) { SpawnPlayerFirstTime(level, ref spawnPos, ref yaw, ref pitch); return; }
 		    
 		    if (transferInfo != null) {
 		        transferInfo.CalcNewPos();
-		        Orientation rot = new Orientation(transferInfo.yawBeforeMapChange, transferInfo.pitchBeforeMapChange);
-		        p.Send(Packet.Teleport(Entities.SelfID, transferInfo.posBeforeMapChange, rot, true));
-		        p.Pos = transferInfo.posBeforeMapChange;
+		        spawnPos = transferInfo.posBeforeMapChange;
+		        yaw = transferInfo.yawBeforeMapChange;
+		        pitch = transferInfo.pitchBeforeMapChange;
+		        
 		        p.Message("You got spawned");
 		        atBorder = true;
 		        transferInfo = null;
 		    }
         }
-        public void SpawnPlayerFirstTime(Level level) {
+        public void SpawnPlayerFirstTime(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (hasBeenSpawned) { return; }
             atBorder = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
 		    if (level.name != levelName) {
-		        //goto will call OnJoinedLevel again to complete the spawn
+		        //goto will call OnPlayerSpawning again to complete the spawn
 		        Command.Find("goto").Use(p, levelName);
 		        return;
 		    }
-	        Position pos = new Position(location.X, location.Y, location.Z);
-	        Orientation rot = new Orientation(yaw, pitch);
+	        spawnPos = new Position(location.X, location.Y, location.Z);
+	        yaw = this.yaw;
+	        pitch = this.pitch;
 	        Logger.Log(LogType.Debug, "Teleporting "+p.name+"!");
-	        p.Send(Packet.Teleport(Entities.SelfID, pos, rot, true));
-	        p.Pos = pos;
 	        hasBeenSpawned = true;
         }
         
@@ -102,7 +102,7 @@ namespace NotAwesomeSurvival {
         }
         void TryGoMapAt(int chunkOffsetX, int chunkOffsetZ) {
             if (atBorder) {
-                p.Message("Can't do it because already at border");
+                //p.Message("Can't do it because already at border");
                 return;
             }
             atBorder = true;
@@ -118,7 +118,6 @@ namespace NotAwesomeSurvival {
             chunkZ+= chunkOffsetZ;
             string mapName = chunkX+","+chunkZ;
             if (File.Exists("levels/"+mapName+".lvl")) {
-                atBorder = true;
                 transferInfo = new TransferInfo(p, chunkOffsetX, chunkOffsetZ);
                 Command.Find("goto").Use(p, mapName);
             } else {
