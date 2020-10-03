@@ -1,35 +1,17 @@
-﻿using System;
-using System.Threading;
-using System.Drawing;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-using Newtonsoft.Json;
-
+﻿using BlockID = System.UInt16;
 using MCGalaxy;
-using MCGalaxy.Commands;
-using MCGalaxy.Commands.Chatting;
-using MCGalaxy.Config;
 using MCGalaxy.Blocks;
-using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Events.LevelEvents;
-using MCGalaxy.Events.PlayerEvents;
-using MCGalaxy.Events.EntityEvents;
-using BlockID = System.UInt16;
-
 using MCGalaxy.Network;
-using MCGalaxy.Maths;
 using MCGalaxy.Tasks;
-using MCGalaxy.DB;
+using System;
 
 namespace NotAwesomeSurvival {
-    
+
     public partial class Inventory {
-        
+
         private Player p;
-        public int[] blocks = new int[Block.MaxRaw+1];
-        
+        public int[] blocks = new int[Block.MaxRaw + 1];
+
         public Inventory(Player p) { this.p = p; }
         public void SetPlayer(Player p) { this.p = p; }
         public void Setup() {
@@ -52,14 +34,14 @@ namespace NotAwesomeSurvival {
                 p.Send(Packet.SetHotbar(0, i, true));
             }
         }
-        
+
         public void GetDrop(Drop drop, bool showToNormalChat = false) {
             if (drop.blockStacks != null) {
                 for (int i = 0; i < drop.blockStacks.Count; i++) {
                     BlockStack bs = drop.blockStacks[i];
-                    
+
                     SetAmount(bs.ID, bs.amount, false);
-                    
+
                     DisplayInfo info = new DisplayInfo();
                     info.inv = this;
                     info.nasBlock = NasBlock.Get(bs.ID);
@@ -69,8 +51,8 @@ namespace NotAwesomeSurvival {
                     } else {
                         info.showToNormalChat = true;
                     }
-        		    SchedulerTask taskDisplayHeldBlock;
-        		    taskDisplayHeldBlock = Server.MainScheduler.QueueOnce(DisplayHeldBlockTask, info, TimeSpan.FromMilliseconds(i * 250));
+                    SchedulerTask taskDisplayHeldBlock;
+                    taskDisplayHeldBlock = Server.MainScheduler.QueueOnce(DisplayHeldBlockTask, info, TimeSpan.FromMilliseconds(i * 250));
                 }
             }
             if (drop.items != null) {
@@ -79,44 +61,44 @@ namespace NotAwesomeSurvival {
                 }
                 UpdateItemDisplay();
             }
-            
+
         }
-        
+
         public void SetAmount(BlockID clientBlockID, int amount, bool displayChange = true) {
             //TODO threadsafe
-            
-            blocks[clientBlockID]+= amount;
-            
-            
+
+            blocks[clientBlockID] += amount;
+
+
             if (displayChange) {
                 NasBlock nb = NasBlock.Get(clientBlockID);
                 DisplayHeldBlock(nb, amount);
             }
-            
+
             if (blocks[clientBlockID] > 0) {
                 //more than zero? unhide the block
-    	        UnhideBlock(clientBlockID);
-    	        return;
+                UnhideBlock(clientBlockID);
+                return;
             } else {
                 //0 or less? hide the block
                 HideBlock(clientBlockID);
             }
-	        
+
         }
         public int GetAmount(BlockID clientBlockID) {
             //TODO threadsafe
             return blocks[clientBlockID];
         }
-        
+
         [NonSerialized()] public CpeMessageType whereHeldBlockIsDisplayed = CpeMessageType.BottomRight3;
         public void DisplayHeldBlock(NasBlock nasBlock, int amountChanged = 0, bool showToNormalChat = false) {
-            
+
             string display = DisplayedBlockString(nasBlock);
             if (amountChanged > 0) {
-                display = "%a+"+amountChanged+" %f"+display;
+                display = "%a+" + amountChanged + " %f" + display;
             }
             if (amountChanged < 0) {
-                display = "%c"+amountChanged+" %f"+display;
+                display = "%c" + amountChanged + " %f" + display;
             }
             if (showToNormalChat) {
                 p.Message(display);
@@ -129,8 +111,8 @@ namespace NotAwesomeSurvival {
             }
             int amount = GetAmount(nasBlock.parentID);
             string hand = amount <= 0 ? "┤" : "╕ %f";
-            
-		    return "["+amount+"] "+nasBlock.GetName(p)+" "+hand;
+
+            return "[" + amount + "] " + nasBlock.GetName(p) + " " + hand;
         }
         private class DisplayInfo {
             public Inventory inv;
@@ -138,15 +120,15 @@ namespace NotAwesomeSurvival {
             public int amountChanged;
             public bool showToNormalChat;
         }
-		static void DisplayHeldBlockTask(SchedulerTask task) {
-		    DisplayInfo info = (DisplayInfo)(task.State);
-		    info.inv.DisplayHeldBlock(info.nasBlock, info.amountChanged, info.showToNormalChat);
-		}
+        static void DisplayHeldBlockTask(SchedulerTask task) {
+            DisplayInfo info = (DisplayInfo)(task.State);
+            info.inv.DisplayHeldBlock(info.nasBlock, info.amountChanged, info.showToNormalChat);
+        }
 
         void HideBlock(BlockID clientBlockID) {
             p.Send(Packet.BlockPermission(clientBlockID, false, false, true));
             p.Send(Packet.SetInventoryOrder(clientBlockID, 0, true));
-            
+
             NasBlock nasBlock = NasBlock.blocks[clientBlockID];
             if (nasBlock.childIDs != null) {
                 foreach (BlockID childID in nasBlock.childIDs) {
@@ -156,25 +138,25 @@ namespace NotAwesomeSurvival {
             }
         }
         void UnhideBlock(BlockID clientBlockID) {
-	        BlockDefinition def = BlockDefinition.GlobalDefs[Block.FromRaw(clientBlockID)];
-	        if (def == null && clientBlockID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(clientBlockID)); }
-	        if (def == null) { return; }
-            
-	        p.Send(Packet.BlockPermission(clientBlockID, true, false, true));
-	        p.Send(Packet.SetInventoryOrder(clientBlockID, (def.InventoryOrder == -1) ? clientBlockID : (ushort)def.InventoryOrder, true));
-	        
+            BlockDefinition def = BlockDefinition.GlobalDefs[Block.FromRaw(clientBlockID)];
+            if (def == null && clientBlockID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(clientBlockID)); }
+            if (def == null) { return; }
+
+            p.Send(Packet.BlockPermission(clientBlockID, true, false, true));
+            p.Send(Packet.SetInventoryOrder(clientBlockID, (def.InventoryOrder == -1) ? clientBlockID : (ushort)def.InventoryOrder, true));
+
             NasBlock nasBlock = NasBlock.blocks[clientBlockID];
             if (nasBlock.childIDs != null) {
                 foreach (BlockID childID in nasBlock.childIDs) {
-        	        def = BlockDefinition.GlobalDefs[Block.FromRaw(childID)];
-        	        if (def == null && childID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(childID)); }
-        	        if (def == null) { continue; }
+                    def = BlockDefinition.GlobalDefs[Block.FromRaw(childID)];
+                    if (def == null && childID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(childID)); }
+                    if (def == null) { continue; }
                     p.Send(Packet.BlockPermission(childID, true, false, true));
-        	        p.Send(Packet.SetInventoryOrder(childID, (def.InventoryOrder == -1) ? childID : (ushort)def.InventoryOrder, true));
+                    p.Send(Packet.SetInventoryOrder(childID, (def.InventoryOrder == -1) ? childID : (ushort)def.InventoryOrder, true));
                 }
             }
         }
-        
+
     }
 
 }

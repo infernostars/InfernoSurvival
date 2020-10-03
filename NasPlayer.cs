@@ -1,30 +1,17 @@
 ﻿using System;
-using System.Threading;
 using System.Drawing;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
-
 using Newtonsoft.Json;
-
 using MCGalaxy;
-using MCGalaxy.Commands;
-using MCGalaxy.Commands.Chatting;
-using MCGalaxy.Config;
-using MCGalaxy.Blocks;
-using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Events.LevelEvents;
 using MCGalaxy.Events.PlayerEvents;
-using MCGalaxy.Events.EntityEvents;
 using BlockID = System.UInt16;
-
 using MCGalaxy.Network;
 using MCGalaxy.Maths;
 using MCGalaxy.Tasks;
-using MCGalaxy.DB;
 
 namespace NotAwesomeSurvival {
-    
+
     public partial class NasPlayer {
         [NonSerialized()] public Player p;
         [NonSerialized()] public NasBlock heldNasBlock = NasBlock.Default;
@@ -44,7 +31,7 @@ namespace NotAwesomeSurvival {
             if (!p.Extras.Contains(Nas.PlayerKey)) { return null; }
             return (NasPlayer)p.Extras[Nas.PlayerKey];
         }
-        
+
         public float HP;
         const float maxHP = 10;
         public int Air;
@@ -55,12 +42,12 @@ namespace NotAwesomeSurvival {
         public byte yaw;
         public byte pitch;
         public bool hasBeenSpawned;
-        
+
         [JsonIgnoreAttribute] public Color targetFogColor = Color.White;
         [JsonIgnoreAttribute] public Color curFogColor = Color.White;
         [JsonIgnoreAttribute] public float targetRenderDistance = Server.Config.MaxFogDistance;
         [JsonIgnoreAttribute] public float curRenderDistance = Server.Config.MaxFogDistance;
-        
+
         public NasPlayer(Player p) {
             this.p = p;
             HP = 10;
@@ -75,19 +62,18 @@ namespace NotAwesomeSurvival {
         }
         public void HandleInteraction(MouseButton button, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
             if (!(p.RawHeldBlock == 0)) { return; }
-            
-		    BlockID serverBlockID = p.level.GetBlock(x, y, z);
-		    BlockID clientBlockID = p.ConvertBlock(serverBlockID);
-		    NasBlock nasBlock = NasBlock.Get(clientBlockID);
-		    if (nasBlock.station != null) {
-		        lock (Crafting.locker) {
+
+            BlockID serverBlockID = p.level.GetBlock(x, y, z);
+            BlockID clientBlockID = p.ConvertBlock(serverBlockID);
+            NasBlock nasBlock = NasBlock.Get(clientBlockID);
+            if (nasBlock.station != null) {
+                lock (Crafting.locker) {
                     Crafting.Recipe recipe = Crafting.GetRecipe(p, x, y, z, nasBlock.station);
                     if (recipe == null) {
                         nasBlock.station.ShowArea(this, x, y, z, Color.Red, 500, 127);
 
-                    }
-                    else {
-                        
+                    } else {
+
                         Drop dropClone = new Drop();
                         if (recipe.drop.blockStacks != null) {
                             dropClone.blockStacks = new List<BlockStack>();
@@ -107,7 +93,7 @@ namespace NotAwesomeSurvival {
                         nasBlock.station.ShowArea(this, x, y, z, Color.LightGreen, 500);
                         bool clearCraftingArea = button == MouseButton.Left;
                         var patternCost = recipe.patternCost;
-                        foreach(KeyValuePair<BlockID, int> pair in patternCost) {
+                        foreach (KeyValuePair<BlockID, int> pair in patternCost) {
                             if (inventory.GetAmount(pair.Key) < pair.Value) {
                                 clearCraftingArea = true; break;
                             }
@@ -115,13 +101,13 @@ namespace NotAwesomeSurvival {
                         if (clearCraftingArea) {
                             Crafting.ClearCraftingArea(p, x, y, z, nasBlock.station.ori);
                         } else {
-                            foreach(KeyValuePair<BlockID, int> pair in patternCost) {
+                            foreach (KeyValuePair<BlockID, int> pair in patternCost) {
                                 inventory.SetAmount(pair.Key, -pair.Value, false);
                             }
                         }
                     }
-		        }
-		    }
+                }
+            }
         }
         public static void SetLocation(NasPlayer np, string levelName, Position pos, Orientation rot) {
             np.levelName = levelName;
@@ -133,15 +119,15 @@ namespace NotAwesomeSurvival {
         }
         public void ChangeHealth(float diff) {
             //TODO threadsafe
-            HP+= diff;
+            HP += diff;
             DisplayHealth();
         }
         public void TakeDamage(float damage) {
             p.Send(Packet.VelocityControl(0, 0.5f, 0, 0, 0, 0));
             ChangeHealth(-damage);
             DisplayHealth("f", "&7[", "&7]");
-			SchedulerTask taskDisplayRed;
-			taskDisplayRed = Server.MainScheduler.QueueOnce(FinishTakeDamage, this, TimeSpan.FromMilliseconds(100));
+            SchedulerTask taskDisplayRed;
+            taskDisplayRed = Server.MainScheduler.QueueOnce(FinishTakeDamage, this, TimeSpan.FromMilliseconds(100));
         }
         static void FinishTakeDamage(SchedulerTask task) {
             NasPlayer np = (NasPlayer)task.State;
@@ -149,42 +135,41 @@ namespace NotAwesomeSurvival {
         }
         [NonSerialized()] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
         public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7] &f") {
-            p.SendCpeMessage(whereHealthIsDisplayed, prefix+HealthString(healthColor)+suffix);
+            p.SendCpeMessage(whereHealthIsDisplayed, prefix + HealthString(healthColor) + suffix);
         }
         private string HealthString(string healthColor) {
             StringBuilder builder = new StringBuilder("&8", (int)maxHP + 6);
-			string final;
-			float totalLostHealth = maxHP - HP;
-			
-			float lostHealthRemaining = totalLostHealth;
-			for(int i = 0; i < totalLostHealth; ++i) {
-			    if (lostHealthRemaining < 1) {
-			        builder.Append("&"+healthColor+"╝"); //broken heart
-			    } else {
-			        builder.Append("♥"); //empty
-			    }
-			    lostHealthRemaining--;
-			}
-			
-			builder.Append("&"+healthColor);
-			for(int i = 0; i < (int)HP; ++i)
-			{ builder.Append("♥"); }
+            string final;
+            float totalLostHealth = maxHP - HP;
 
-			final = builder.ToString();
-			return final;
+            float lostHealthRemaining = totalLostHealth;
+            for (int i = 0; i < totalLostHealth; ++i) {
+                if (lostHealthRemaining < 1) {
+                    builder.Append("&" + healthColor + "╝"); //broken heart
+                } else {
+                    builder.Append("♥"); //empty
+                }
+                lostHealthRemaining--;
+            }
+
+            builder.Append("&" + healthColor);
+            for (int i = 0; i < (int)HP; ++i) { builder.Append("♥"); }
+
+            final = builder.ToString();
+            return final;
         }
-        
-        public void UpdateHeldBlock() {
-		    //p.RawHeldBlock is named wrong, it's actually serverBlockID, so we have to convert it to raw
-		    BlockID clientBlockID = Block.ToRaw(p.RawHeldBlock);
-		    NasBlock nasBlock = NasBlock.Get(clientBlockID);
-		    
-		    if (nasBlock.parentID != heldNasBlock.parentID) {
-		        inventory.DisplayHeldBlock(nasBlock);
-		    }
 
-		    heldNasBlock = nasBlock;
+        public void UpdateHeldBlock() {
+            //p.RawHeldBlock is named wrong, it's actually serverBlockID, so we have to convert it to raw
+            BlockID clientBlockID = Block.ToRaw(p.RawHeldBlock);
+            NasBlock nasBlock = NasBlock.Get(clientBlockID);
+
+            if (nasBlock.parentID != heldNasBlock.parentID) {
+                inventory.DisplayHeldBlock(nasBlock);
+            }
+
+            heldNasBlock = nasBlock;
         }
     }
-    
+
 }

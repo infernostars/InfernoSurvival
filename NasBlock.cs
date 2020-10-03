@@ -1,49 +1,29 @@
 ﻿using System;
-using System.Threading;
-using System.Drawing;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-using Newtonsoft.Json;
-
 using MCGalaxy;
-using MCGalaxy.Commands;
-using MCGalaxy.Commands.Chatting;
-using MCGalaxy.Config;
-using MCGalaxy.Blocks;
-using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Events.LevelEvents;
-using MCGalaxy.Events.PlayerEvents;
-using MCGalaxy.Events.EntityEvents;
 using BlockID = System.UInt16;
 
-using MCGalaxy.Network;
-using MCGalaxy.Maths;
-using MCGalaxy.Tasks;
-using MCGalaxy.DB;
-
 namespace NotAwesomeSurvival {
-    
+
     public partial class NasBlock {
-        public static NasBlock[] blocks = new NasBlock[Block.MaxRaw+1];
+        public static NasBlock[] blocks = new NasBlock[Block.MaxRaw + 1];
         public static NasBlock Default;
         public static int[] DefaultDurabilities = new int[(int)Material.Count];
-        
+
         public static NasBlock Get(BlockID clientBlockID) {
-		    return (NasBlock.blocks[clientBlockID] == null) ?
-		        NasBlock.Default :
-		        NasBlock.blocks[clientBlockID];
+            return (NasBlock.blocks[clientBlockID] == null) ?
+                NasBlock.Default :
+                NasBlock.blocks[clientBlockID];
         }
         public string GetName(Player p, BlockID id = BlockID.MaxValue) {
             if (id == BlockID.MaxValue) { id = parentID; }
             return Block.GetName(p, Block.FromRaw(id)).Split('-')[0];
         }
-        
+
         static Drop DefaultDropHandler(BlockID id) {
             return new Drop(id);
         }
-        
+
         //value is default durability, which is considered in terms of how many "hits" it takes to break
         public enum Material {
             None,
@@ -58,7 +38,7 @@ namespace NotAwesomeSurvival {
             Metal,
             Count
         }
-        
+
         public BlockID selfID;
         public BlockID parentID;
         public List<BlockID> childIDs = null;
@@ -92,7 +72,7 @@ namespace NotAwesomeSurvival {
                 blocks[parent.parentID].childIDs = new List<BlockID>();
             }
             blocks[parent.parentID].childIDs.Add(id);
-            
+
             parentID = parent.parentID;
             material = parent.material;
             tierOfToolNeededToBreak = parent.tierOfToolNeededToBreak;
@@ -108,5 +88,5 @@ namespace NotAwesomeSurvival {
             }
         }
     }
-    
-} 
+
+}

@@ -1,30 +1,9 @@
 ﻿using System;
-using System.Threading;
-using System.Drawing;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-using Newtonsoft.Json;
-
-using MCGalaxy;
-using MCGalaxy.Commands;
-using MCGalaxy.Commands.Chatting;
-using MCGalaxy.Config;
-using MCGalaxy.Blocks;
-using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Events.LevelEvents;
-using MCGalaxy.Events.PlayerEvents;
-using MCGalaxy.Events.EntityEvents;
 using BlockID = System.UInt16;
 
-using MCGalaxy.Network;
-using MCGalaxy.Maths;
-using MCGalaxy.Tasks;
-using MCGalaxy.DB;
-
 namespace NotAwesomeSurvival {
-    
+
     public partial class NasBlock {
         static Random r = new Random();
         public static void Setup() {
@@ -38,9 +17,9 @@ namespace NotAwesomeSurvival {
             DefaultDurabilities[(int)Material.Organic] = 5;
             DefaultDurabilities[(int)Material.Glass] = 3;
             DefaultDurabilities[(int)Material.Metal] = 32;
-            
+
             Default = new NasBlock(0, Material.Earth);
-            
+
             BlockID i;
             i = 1; //Stone
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
@@ -62,13 +41,13 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i++, blocks[70]);
             blocks[i] = new NasBlock(i++, blocks[70]);
             blocks[i] = new NasBlock(i++, blocks[70]);
-            
+
             i = 162; //Cobblestone
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             i = 163; //Cobblestone-U (next is D)
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i, blocks[163]);
-            
+
             i = 2; //Grass
             blocks[i] = new NasBlock(i, Material.Earth);
             blocks[i].dropHandler = (dropID) => {
@@ -83,10 +62,10 @@ namespace NotAwesomeSurvival {
                 //grassDrop.items.Add(new Item("Stone Pickaxe") );
                 return grassDrop;
             };
-            
+
             i = 3; //Dirt
             blocks[i] = new NasBlock(i, Material.Earth);
-            
+
             i = 4; //Cobblebrick
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             i = 50; //Cobble brick-D
@@ -96,7 +75,7 @@ namespace NotAwesomeSurvival {
             i = 133; //Cobble brick wall
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i, blocks[133]);
-            
+
             i = 5; //Wood
             blocks[i] = new NasBlock(i, Material.Wood);
             i = 56; //Wood slab-U
@@ -125,7 +104,7 @@ namespace NotAwesomeSurvival {
             i = 94; //Fence (wood)
             blocks[i] = new NasBlock(i++, Material.Wood);
             blocks[i] = new NasBlock(i, blocks[94]);
-            
+
             i = 14; //Gnarly (Log)
             blocks[i] = new NasBlock(i, Material.Wood);
             i = 17; //Log-UD
@@ -134,20 +113,20 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, blocks[17]);
             i = 16; //Log-NS
             blocks[i] = new NasBlock(i, blocks[17]);
-            
-            
+
+
             i = 6; //Sapling
             blocks[i] = new NasBlock(i, Material.Plant);
-            
+
             i = 7; //Bedrock
             blocks[i] = new NasBlock(i, Material.Stone, int.MaxValue);
-            
+
             i = 12; //Sand
             blocks[i] = new NasBlock(i, Material.Earth, 3);
-            
+
             i = 13; //Gravel
             blocks[i] = new NasBlock(i, Material.Earth);
-            
+
             i = 18; //Leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].damageDoneToTool = 0;
@@ -160,27 +139,27 @@ namespace NotAwesomeSurvival {
             i = 19; //Dark leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].damageDoneToTool = 0;
-            
+
             i = 20; //Glass
             blocks[i] = new NasBlock(i, Material.Glass);
-            
+
             i = 37; //Dandelion
             blocks[i] = new NasBlock(i, Material.Plant);
-            
+
             i = 38; //Rose
             blocks[i] = new NasBlock(i, Material.Plant);
             i = 40; //Tall grass
             blocks[i] = new NasBlock(i, Material.Plant);
-            
+
             i = 41; //Gold
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 2);
             i = 42; //Iron
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
             i = 631; //Diamond
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 3);
-            
+
             i = 44; //Concrete slab-D
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] / 2, 1 );
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] / 2, 1);
             blocks[i].damageDoneToTool = 0.5f;
             i = 58; //Concrete slab-U
             blocks[i] = new NasBlock(i, blocks[44]);
@@ -216,68 +195,68 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i++, blocks[480]);
             blocks[i] = new NasBlock(i++, blocks[480]);
             blocks[i] = new NasBlock(i, blocks[480]);
-            
-            
+
+
             i = 48; //Obsidian slab-D
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             i = 298; //Obsidian slab-U
             blocks[i] = new NasBlock(i, blocks[48]);
             i = 49; //Obsidian
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 51; //Rope
             blocks[i] = new NasBlock(i, Material.Wood);
-            
+
             i = 52; //Sandstone
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             i = 299; //Sandstone slab
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i, blocks[299]);
-            
+
             i = 53; //Snow (layer)
             blocks[i] = new NasBlock(i, Material.Earth);
-            
+
             i = 54; //Fire
             blocks[i] = new NasBlock(i, Material.None);
-            
+
             i = 55; //Dark door
             blocks[i] = new NasBlock(i, Material.Wood);
-            
-            
+
+
             i = 60; //Ice
             blocks[i] = new NasBlock(i, Material.Stone, 8);
-            
+
             i = 61; //Marble
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 62; //Lamp
             blocks[i] = new NasBlock(i, Material.Glass);
-            
+
             i = 63; //Pillar-UD
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 64; //Marker
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 65; //Stone brick
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 74; //Dark pillar
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 75; //Stone pole
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i++, blocks[75]);
             blocks[i] = new NasBlock(i++, blocks[75]);
-            
+
             i = 86; //Stone brick slab
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i++, blocks[86]);
-            
+
             i = 104; //Dry leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].damageDoneToTool = 0;
-            
+
             //Drawers
             i = 198;
             blocks[i] = new NasBlock(i, blocks[17]);
@@ -288,7 +267,7 @@ namespace NotAwesomeSurvival {
             i = 199;
             blocks[i] = new NasBlock(i, blocks[198]);
             blocks[i].station.ori = Crafting.Station.Orientation.WE;
-            
+
             //Furnace
             i = 625;
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
@@ -299,10 +278,10 @@ namespace NotAwesomeSurvival {
             i = 626;
             blocks[i] = new NasBlock(i, blocks[625]);
             blocks[i].station.ori = Crafting.Station.Orientation.NS;
-            
+
             i = 239; //hotcoals
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            
+
             i = 204; //Monitor-S
             blocks[i] = new NasBlock(i, Material.Metal, 3);
             i++;
@@ -311,18 +290,18 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, blocks[204]);
             i++;
             blocks[i] = new NasBlock(i, blocks[204]);
-            
-            
+
+
             i = 627; //Coal ore
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]+2, 1);
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 2, 1);
             i = 628; //Iron ore
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]+4, 1);
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 4, 1);
             i = 629; //Gold ore
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]+6, 2);
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 2);
             i = 630; //Diamond ore
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]+6, 3);
-            
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 3);
+
         }
     } //class NasBlock
-    
-} 
+
+}

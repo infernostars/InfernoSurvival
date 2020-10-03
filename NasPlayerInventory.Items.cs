@@ -1,48 +1,30 @@
 ﻿using System;
-using System.Threading;
-using System.Drawing;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-
 using Newtonsoft.Json;
-
 using MCGalaxy;
-using MCGalaxy.Commands;
-using MCGalaxy.Commands.Chatting;
-using MCGalaxy.Config;
-using MCGalaxy.Blocks;
-using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Events.LevelEvents;
-using MCGalaxy.Events.PlayerEvents;
-using MCGalaxy.Events.EntityEvents;
-using BlockID = System.UInt16;
-
 using MCGalaxy.Network;
-using MCGalaxy.Maths;
-using MCGalaxy.Tasks;
-using MCGalaxy.DB;
 
 namespace NotAwesomeSurvival {
-    
+
     public partial class Inventory {
-        
+
         public Item[] items = new Item[maxItems];
         public const int maxItems = 27;
         public const int itemBarLength = 9;
         public int selectedItemIndex = 0;
         [JsonIgnoreAttribute] public ColorDesc[] selectorColors = DynamicColor.defaultColors;
-        
-        [JsonIgnoreAttribute] public Item HeldItem {
+
+        [JsonIgnoreAttribute]
+        public Item HeldItem {
             get { return items[selectedItemIndex] == null ? Item.Fist : items[selectedItemIndex]; }
         }
-        
+
         public void SetupItems() {
             MoveBar(0, ref selectedItemIndex);
         }
-        
+
         //returns false if the player doesn't have room for the item
-        public bool GetItem (Item item) {
+        public bool GetItem(Item item) {
             for (int i = 0; i < maxItems; i++) {
                 if (items[i] == null) {
                     items[i] = item;
@@ -75,13 +57,12 @@ namespace NotAwesomeSurvival {
             } else {
                 MoveBar(0, ref selectedItemIndex);
             }
-            
+
             DisplayHeldBlock(np.heldNasBlock);
             np.DisplayHealth();
         }
         public void DoItemMove() {
-            if (slotToMoveTo == -1) { BeginItemMove(); }
-            else { FinalizeItemMove(); }
+            if (slotToMoveTo == -1) { BeginItemMove(); } else { FinalizeItemMove(); }
             UpdateItemDisplay();
         }
         private void BeginItemMove() {
@@ -91,26 +72,26 @@ namespace NotAwesomeSurvival {
         private void FinalizeItemMove() {
             Item gettingMoved = items[selectedItemIndex];
             Item to = items[slotToMoveTo];
-            
+
             //swap around
             items[selectedItemIndex] = to;
             items[slotToMoveTo] = gettingMoved;
-            
+
             //p.Message("moved item from slot {0} to slot {1}", itemBarSelection, slotToMoveTo);
             selectedItemIndex = slotToMoveTo;
             slotToMoveTo = -1;
         }
         public void MoveItemBarSelection(int direction) {
-            
+
             Item heldItemBeforeScrolled = HeldItem;
-            
+
             deleting = false;
             if (slotToMoveTo != -1) {
                 MoveBar(direction, ref slotToMoveTo);
                 return;
             }
             MoveBar(direction, ref selectedItemIndex);
-            
+
             if (heldItemBeforeScrolled != HeldItem) {
                 //only reset breaking if they actually are holding a different item than before
                 NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
@@ -123,97 +104,91 @@ namespace NotAwesomeSurvival {
             int length = bagOpen ? maxItems : itemBarLength;
             if (bagOpen) {
                 int offset = 0;
-                thing:
+            thing:
                 if (offset <= maxItems - itemBarLength) {
-                    
-                    if (selection == offset+itemBarLength-1 && selection+direction == offset+itemBarLength) {
-                        direction-= itemBarLength;
-                    } else if (selection == offset && selection+direction == offset-1) {
-                        direction+= itemBarLength;
+
+                    if (selection == offset + itemBarLength - 1 && selection + direction == offset + itemBarLength) {
+                        direction -= itemBarLength;
+                    } else if (selection == offset && selection + direction == offset - 1) {
+                        direction += itemBarLength;
                     }
-                    offset+= itemBarLength;
+                    offset += itemBarLength;
                     goto thing;
                 }
             }
-            
+
             selection += direction;
             selection = selection % length;
-            if (selection < 0) { selection+= length; }
+            if (selection < 0) { selection += length; }
             UpdateItemDisplay();
         }
-        
+
         public void UpdateItemDisplay() {
             selectorColors = HeldItem.healthColors;
             if (bagOpen) {
                 DisplayItemBar(0, "%7↑ª", "%7ª↑", CpeMessageType.BottomRight3);
                 DisplayItemBar(itemBarLength, "%7←¥", "%7₧→", CpeMessageType.BottomRight2);
-                DisplayItemBar(itemBarLength*2, "%7↓º", "%7º↓", CpeMessageType.BottomRight1);
+                DisplayItemBar(itemBarLength * 2, "%7↓º", "%7º↓", CpeMessageType.BottomRight1);
                 return;
             }
             DisplayItemBar();
         }
         private void DisplayItemBar(int offset = 0, string prefix = "%7←«", string suffix = "%7»→",
                                    CpeMessageType location = CpeMessageType.BottomRight1) {
-            
+
             StringBuilder builder = new StringBuilder(prefix);
-            
-            for (int i = offset; i < itemBarLength+offset; i++) {
+
+            for (int i = offset; i < itemBarLength + offset; i++) {
                 bool moving = !(slotToMoveTo == -1);
                 bool handsHere = i == slotToMoveTo;
                 bool selectionHere = i == selectedItemIndex;
-                bool selectionNext = moving ? i+1 == slotToMoveTo : i+1 == selectedItemIndex;
+                bool selectionNext = moving ? i + 1 == slotToMoveTo : i + 1 == selectedItemIndex;
                 int itemIndex = i;
-                
-                if (handsHere) { builder.Append("&h╣"); }
-                else if (selectionHere && !moving) {
+
+                if (handsHere) { builder.Append("&h╣"); } else if (selectionHere && !moving) {
                     if (deleting) {
                         builder.Append("&h╙");
                     } else {
                         builder.Append("&hƒ");
                     }
-                }
-                else if (i == offset) { builder.Append("⌐"); }
-                
+                } else if (i == offset) { builder.Append("⌐"); }
+
                 if (handsHere) {
                     itemIndex = selectedItemIndex;
-                }
-                else if (moving && !handsHere && selectionHere) {
+                } else if (moving && !handsHere && selectionHere) {
                     itemIndex = slotToMoveTo;
                 }
-                
+
                 Item item = items[itemIndex];
-                
-                if (item == null) { builder.Append("¬"); }
-                else { builder.Append(item.ColoredIcon); }
-                
-                
-                if (handsHere) { builder.Append("&h╕"); }
-                else if (selectionHere && !moving) {
+
+                if (item == null) { builder.Append("¬"); } else { builder.Append(item.ColoredIcon); }
+
+
+                if (handsHere) { builder.Append("&h╕"); } else if (selectionHere && !moving) {
                     if (deleting) {
                         builder.Append("&h╙");
                     } else {
                         builder.Append("&h½");
                     }
-                }
-                else if (!selectionNext || i == itemBarLength+offset-1) {
+                } else if (!selectionNext || i == itemBarLength + offset - 1) {
                     builder.Append("⌐");
                 }
             }
             builder.Append(suffix);
             string final = ColorCleanUp.CleanedString(builder.ToString());
             p.SendCpeMessage(location, final);
-            
+
             //p.Message("Length of it is {0}", final.Length);
         }
-        
+
         [NonSerialized()] private bool deleting = false;
         public void DeleteItem(bool confirmed = false) {
             //don't even fuck with deleting if they're moving items
             if (slotToMoveTo != -1) { return; }
-            
+
             Item item = items[selectedItemIndex];
             if (item == null) { return; }
-            
+
             if (deleting) {
                 if (!confirmed) {
                     p.Message("Are you sure you want to delete {0}%S?", item.ColoredName);
@@ -233,7 +208,7 @@ namespace NotAwesomeSurvival {
             UpdateItemDisplay();
         }
         public void BreakItem(ref Item item) {
-            
+
             for (int i = 0; i < maxItems; i++) {
                 if (item == items[i]) {
                     p.Message("Your {0}%S broke!", item.ColoredName);
@@ -242,8 +217,8 @@ namespace NotAwesomeSurvival {
                 }
             }
         }
-        
-        
+
+
     } //class Inventory
 
 }
