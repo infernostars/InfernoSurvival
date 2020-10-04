@@ -3,6 +3,8 @@ using System.Drawing;
 using System.IO;
 using Newtonsoft.Json;
 using MCGalaxy;
+using MCGalaxy.Blocks;
+using BlockID = System.UInt16;
 using MCGalaxy.Events.PlayerEvents;
 using MCGalaxy.Network;
 using MCGalaxy.Tasks;
@@ -18,7 +20,7 @@ namespace NotAwesomeSurvival {
         }
 
         static void OnPlayerSpawning(Player p, ref Position pos, ref byte yaw, ref byte pitch, bool respawning) {
-            if (respawning) { return; }
+            //if (respawning) { return; }
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
             np.SpawnPlayer(p.level, ref pos, ref yaw, ref pitch);
         }
@@ -46,7 +48,11 @@ namespace NotAwesomeSurvival {
             if (hasBeenSpawned) { return; }
             atBorder = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
-
+            //p.Message("HP is {0}", HP);
+            if (HP == 0) {
+                //p.Message("resetting date they died");
+                lastDeathDate = DateTime.UtcNow;
+            }
             spawnPos = new Position(location.X, location.Y, location.Z);
             yaw = this.yaw;
             pitch = this.pitch;
@@ -59,11 +65,33 @@ namespace NotAwesomeSurvival {
             }
             hasBeenSpawned = true;
         }
-
+        [JsonIgnore] int round = 0;
         public void DoMovement(Position next, byte yaw, byte pitch) {
+            
+            CheckGround();
             CheckMapCrossing(p.Pos);
             UpdateHeldBlock();
             UpdateCaveFog(next);
+            round++;
+        }
+        void CheckGround() {
+            Position below = p.Pos;
+            below.Y-= 1;
+            
+            if (Collision.TouchesGround(p.level, bounds, below)) {
+
+                float fallHeight = lastGroundedLocation.Y - p.Pos.Y;
+                if (fallHeight > 0) {
+                    fallHeight /= 32f;
+                    fallHeight-= 4;
+                    
+                    if (fallHeight > 0) {
+                        //p.Message("damage is {0}", fallHeight);
+                        TakeDamage(fallHeight);
+                    }
+                }
+                lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(p.Pos.X, p.Pos.Y, p.Pos.Z);
+            }
         }
         [JsonIgnoreAttribute] bool atBorder = true;
         void CheckMapCrossing(Position next) {

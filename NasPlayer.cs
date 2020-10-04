@@ -12,7 +12,7 @@ using MCGalaxy.Tasks;
 
 namespace NotAwesomeSurvival {
 
-    public partial class NasPlayer {
+    public partial class NasPlayer : NasEntity {
         [NonSerialized()] public Player p;
         [NonSerialized()] public NasBlock heldNasBlock = NasBlock.Default;
         [NonSerialized()] public ushort breakX = ushort.MaxValue, breakY = ushort.MaxValue, breakZ = ushort.MaxValue;
@@ -32,15 +32,7 @@ namespace NotAwesomeSurvival {
             return (NasPlayer)p.Extras[Nas.PlayerKey];
         }
 
-        public float HP;
-        const float maxHP = 10;
-        public int Air;
         public Inventory inventory;
-        public string levelName;
-        public Vec3S32 location;
-        public Vec3S32 lastGroundedLocation;
-        public byte yaw;
-        public byte pitch;
         public bool hasBeenSpawned;
 
         [JsonIgnoreAttribute] public Color targetFogColor = Color.White;
@@ -109,29 +101,49 @@ namespace NotAwesomeSurvival {
                 }
             }
         }
-        public static void SetLocation(NasPlayer np, string levelName, Position pos, Orientation rot) {
-            np.levelName = levelName;
-            np.location.X = pos.X;
-            np.location.Y = pos.Y;
-            np.location.Z = pos.Z;
-            np.yaw = rot.RotY;
-            np.pitch = rot.HeadX;
-        }
-        public void ChangeHealth(float diff) {
-            //TODO threadsafe
-            HP += diff;
+        public override void ChangeHealth(float diff) {
+            base.ChangeHealth(diff);
             DisplayHealth();
         }
-        public void TakeDamage(float damage) {
-            p.Send(Packet.VelocityControl(0, 0.5f, 0, 0, 0, 0));
+        /// <summary>
+        /// returns true if dead
+        /// </summary>
+        /// <param name="damage"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public bool TakeDamage(float damage, string source = "unknown causes") {
+            TimeSpan timeSinceDeath = DateTime.UtcNow.Subtract(lastDeathDate);
+            if (timeSinceDeath.TotalMilliseconds < 2000) {
+                p.Message("You cannot take damage after dying until 2 seconds have passed");
+                return false;
+            }
             ChangeHealth(-damage);
             DisplayHealth("f", "&7[", "&7]");
+            if (HP == 0) {
+                Die(source);
+                return true;
+            }
+            p.Send(Packet.VelocityControl(0, 1, 0, 0, 0, 0));
             SchedulerTask taskDisplayRed;
             taskDisplayRed = Server.MainScheduler.QueueOnce(FinishTakeDamage, this, TimeSpan.FromMilliseconds(100));
+            
+            return false;
         }
         static void FinishTakeDamage(SchedulerTask task) {
             NasPlayer np = (NasPlayer)task.State;
             np.DisplayHealth();
+        }
+        [JsonIgnoreAttribute] DateTime lastDeathDate = DateTime.MinValue;
+        public override void Die(string source) {
+            lastDeathDate = DateTime.UtcNow;
+            hasBeenSpawned = false;
+            Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
+            NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
+            p.HandleDeath(Block.Stone, p.ColoredName+"%c died%S from "+source+"%S.", false, true);
+            HP = maxHP;
+            inventory = new Inventory(p);
+            inventory.Setup();
+            DisplayHealth();
         }
         [NonSerialized()] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
         public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7] &f") {

@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collision.cs" />
     <Compile Include="Crafting.Setup.cs" />
     <Compile Include="Drop.cs" />
     <Compile Include="ItemProp.Setup.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="ItemProp.cs" />
     <Compile Include="NasBlock.cs" />
     <Compile Include="NasBlockChange.cs" />
+    <Compile Include="NasEntity.cs" />
     <Compile Include="NasGen.cs" />
     <Compile Include="NasLevel.cs" />
     <Compile Include="NasPlayer.Movement.cs" />
@@ -80,7 +82,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MCGalaxy\MCGalaxy\MCGalaxy_.csproj">
+    <ProjectReference Include="..\MCGalaxy\MCGalaxy_.csproj">
       <Project>{12597DB0-7C34-4DE1-88EA-9250FF3372EB}</Project>
       <Name>MCGalaxy_</Name>
       <Private>False</Private>

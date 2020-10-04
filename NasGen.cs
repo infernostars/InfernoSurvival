@@ -99,7 +99,7 @@ namespace NotAwesomeSurvival {
             BlockID soil;
 
             public void Do() {
-                CalcBiomes();
+                CalcTemps();
                 GenTerrain();
                 CalcHeightmap();
                 GenSoil();
@@ -189,13 +189,13 @@ namespace NotAwesomeSurvival {
                     }
                 NasLevel.all.Add(lvl.name, nl);
             }
-            void CalcBiomes() {
+            void CalcTemps() {
                 p.Message("Calculating temperatures");
                 temps = new float[lvl.Width, lvl.Length];
                 for (double z = 0; z < lvl.Length; ++z)
                     for (double x = 0; x < lvl.Width; ++x) {
                         //divide by less for smaller scale
-                        double xVal = (x + offsetX) / 15, zVal = (z + offsetZ) / 15;
+                        double xVal = (x + offsetX) / 300, zVal = (z + offsetZ) / 300;
                         const double adj = 1;
                         xVal += adj;
                         zVal += adj;
@@ -216,7 +216,7 @@ namespace NotAwesomeSurvival {
 
                             if (lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z) == Block.Stone &&
                                 lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) != Block.Stone) {
-
+                                soil = GetSoilType(x, z);
                                 if (y <= oceanHeight - 12) {
                                     soil = Block.Gravel;
                                 } else if (y <= oceanHeight + 1) {
@@ -336,7 +336,13 @@ namespace NotAwesomeSurvival {
                 tree.SetData(r, r.Next(0, 2));
                 return tree;
             }
-
+            BlockID GetSoilType(int x, int z) {
+                if (temps[x,z] > 0.5) {
+                    return Block.Sand;
+                }
+                return Block.Dirt;
+            }
+            
             void GenOre() {
                 for (int y = 0; y < (ushort)lvl.Height - 1; y++)
                     for (int z = 0; z < lvl.Length; ++z)
@@ -378,17 +384,25 @@ namespace NotAwesomeSurvival {
                 return false;
             }
         }
+        
+        //public class Biome {
+        //    BlockID topSoil;
+        //    BlockID soil;
+        //    Tree treeType;
+        //    BlockID treeLeaves;
+        //    BlockID treeTrunk;
+        //}
 
 
 
-        class GotoInfo {
-            public Player p;
-            public string levelName;
-        }
-        static void Goto(SchedulerTask task) {
-            GotoInfo info = (GotoInfo)task.State;
-            Command.Find("goto").Use(info.p, info.levelName);
-        }
+        //class GotoInfo {
+        //    public Player p;
+        //    public string levelName;
+        //}
+        //static void Goto(SchedulerTask task) {
+        //    GotoInfo info = (GotoInfo)task.State;
+        //    Command.Find("goto").Use(info.p, info.levelName);
+        //}
     }
 
 }

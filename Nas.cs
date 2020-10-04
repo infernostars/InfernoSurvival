@@ -40,6 +40,7 @@ namespace NotAwesomeSurvival {
             ItemProp.Setup();
             Crafting.Setup();
             DynamicColor.Setup();
+            Collision.Setup();
 
             OnPlayerConnectEvent.Register(OnPlayerConnect, Priority.High);
             OnJoinedLevelEvent.Register(OnJoinedLevel, Priority.High);
@@ -78,7 +79,7 @@ namespace NotAwesomeSurvival {
             } else {
                 np = new NasPlayer(p);
                 Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
-                NasPlayer.SetLocation(np, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
+                NasEntity.SetLocation(np, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
                 p.Extras[PlayerKey] = np;
                 Logger.Log(LogType.Debug, "Created new save file for " + p.name + "!");
             }
@@ -185,8 +186,8 @@ namespace NotAwesomeSurvival {
                 //np.TakeDamage(0.5f);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
-                //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
-                //np.ChangeHealth(0.5f);
+                NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
+                np.ChangeHealth(0.5f);
             }
             if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
             if (action == MouseAction.Pressed) {
