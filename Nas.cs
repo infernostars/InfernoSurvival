@@ -67,7 +67,7 @@ namespace NotAwesomeSurvival {
         }
 
         static void OnPlayerConnect(Player p) {
-            Logger.Log("OnPlayerConnect");
+            Player.Console.Message("OnPlayerConnect");
             string path = GetSavePath(p);
             NasPlayer np;
             if (File.Exists(path)) {

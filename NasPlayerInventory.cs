@@ -15,7 +15,7 @@ namespace NotAwesomeSurvival {
         public Inventory(Player p) { this.p = p; }
         public void SetPlayer(Player p) { this.p = p; }
         public void Setup() {
-            Logger.Log("setting up inventory");
+            Player.Console.Message("setting up inventory");
             //hide all blocks
             for (BlockID clientBlockID = 1; clientBlockID <= Block.MaxRaw; clientBlockID++) {
                 p.Send(Packet.BlockPermission(clientBlockID, false, false, true));

@@ -124,7 +124,7 @@ namespace NotAwesomeSurvival {
                         if (blockID == Block.Invalid) { blockID = 0; }
                         blockID = p.ConvertBlock(blockID);
                         NasBlock nb = NasBlock.Get(blockID);
-                        //Logger.Log("Block at "+indexX+", "+indexY+" is "+block);
+                        //Player.Console.Message("Block at "+indexX+", "+indexY+" is "+block);
                         area[indexX, indexY] = nb;
 
                         indexX++;
@@ -139,7 +139,7 @@ namespace NotAwesomeSurvival {
                         if (blockID == Block.Invalid) { blockID = 0; }
                         blockID = p.ConvertBlock(blockID);
                         NasBlock nb = NasBlock.Get(blockID);
-                        //Logger.Log("Block at "+indexX+", "+indexY+" is "+block);
+                        //Player.Console.Message("Block at "+indexX+", "+indexY+" is "+block);
                         area[indexX, indexY] = nb;
 
                         indexX++;

@@ -48,7 +48,7 @@ namespace NotAwesomeSurvival {
             hasBeenSpawned = false;
         }
         public void SetPlayer(Player p) {
-            Logger.Log("setting player in inventory");
+            Player.Console.Message("setting player in inventory");
             this.p = p;
             inventory.SetPlayer(p);
         }
