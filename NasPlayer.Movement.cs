@@ -77,17 +77,19 @@ namespace NotAwesomeSurvival {
         void CheckGround() {
             Position below = p.Pos;
             below.Y-= 1;
-            
-            if (Collision.TouchesGround(p.level, bounds, below)) {
+            float fallDamageMultiplier = 1;
+            if (Collision.TouchesGround(p.level, bounds, below, out fallDamageMultiplier)) {
 
                 float fallHeight = lastGroundedLocation.Y - p.Pos.Y;
                 if (fallHeight > 0) {
                     fallHeight /= 32f;
-                    fallHeight-= 4;
+                    fallHeight-= 3;
                     
                     if (fallHeight > 0) {
-                        //p.Message("damage is {0}", fallHeight);
-                        TakeDamage(fallHeight);
+                        float damage = (int)fallHeight * 2;
+                        damage /= 4;
+                        p.Message("damage is {0}", damage*fallDamageMultiplier);
+                        TakeDamage(damage*fallDamageMultiplier, "falling");
                     }
                 }
                 lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(p.Pos.X, p.Pos.Y, p.Pos.Z);

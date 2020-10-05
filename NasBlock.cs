@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MCGalaxy;
+using MCGalaxy.Maths;
 using BlockID = System.UInt16;
 
 namespace NotAwesomeSurvival {
@@ -36,6 +37,8 @@ namespace NotAwesomeSurvival {
             Organic,
             Glass,
             Metal,
+            Liquid,
+            Lava,
             Count
         }
 
@@ -50,6 +53,10 @@ namespace NotAwesomeSurvival {
         public Func<BlockID, Drop> dropHandler;
         public int resourceCost;
         public Crafting.Station station;
+        
+        public bool collides = true;
+        public AABB bounds;
+        public float fallDamageMultiplier = -1;
 
         public NasBlock(BlockID id, Material mat) {
             selfID = id;

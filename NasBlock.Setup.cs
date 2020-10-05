@@ -21,6 +21,13 @@ namespace NotAwesomeSurvival {
             Default = new NasBlock(0, Material.Earth);
 
             BlockID i;
+            
+            i = 8; //active water
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            i = 9; //still water
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            
+            
             i = 1; //Stone
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             i = 596; //Stone slab

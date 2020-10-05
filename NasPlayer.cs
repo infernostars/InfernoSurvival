@@ -114,16 +114,17 @@ namespace NotAwesomeSurvival {
         public bool TakeDamage(float damage, string source = "unknown causes") {
             TimeSpan timeSinceDeath = DateTime.UtcNow.Subtract(lastDeathDate);
             if (timeSinceDeath.TotalMilliseconds < 2000) {
-                p.Message("You cannot take damage after dying until 2 seconds have passed");
+                //p.Message("You cannot take damage after dying until 2 seconds have passed");
                 return false;
             }
+            if (damage == 0) { return false; }
             ChangeHealth(-damage);
             DisplayHealth("f", "&7[", "&7]");
             if (HP == 0) {
                 Die(source);
                 return true;
             }
-            p.Send(Packet.VelocityControl(0, 1, 0, 0, 0, 0));
+            p.Send(Packet.VelocityControl(0, 0.25f, 0, 0, 0, 0));
             SchedulerTask taskDisplayRed;
             taskDisplayRed = Server.MainScheduler.QueueOnce(FinishTakeDamage, this, TimeSpan.FromMilliseconds(100));
             
@@ -141,12 +142,12 @@ namespace NotAwesomeSurvival {
             NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
             p.HandleDeath(Block.Stone, p.ColoredName+"%c died%S from "+source+"%S.", false, true);
             HP = maxHP;
-            inventory = new Inventory(p);
-            inventory.Setup();
+            //inventory = new Inventory(p);
+            //inventory.Setup();
             DisplayHealth();
         }
         [NonSerialized()] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
-        public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7] &f") {
+        public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7]¼") {
             p.SendCpeMessage(whereHealthIsDisplayed, prefix + HealthString(healthColor) + suffix);
         }
         private string HealthString(string healthColor) {
