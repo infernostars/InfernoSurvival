@@ -68,22 +68,22 @@ namespace NotAwesomeSurvival {
         [JsonIgnore] int round = 0;
         public void DoMovement(Position next, byte yaw, byte pitch) {
             
-            CheckGround();
+            CheckGround(next);
             CheckMapCrossing(p.Pos);
             UpdateHeldBlock();
             UpdateCaveFog(next);
             round++;
         }
-        void CheckGround() {
-            Position below = p.Pos;
-            below.Y-= 1;
+        void CheckGround(Position next) {
+            Position below = next;
+            below.Y-= 2;
             float fallDamageMultiplier = 1;
             if (Collision.TouchesGround(p.level, bounds, below, out fallDamageMultiplier)) {
 
-                float fallHeight = lastGroundedLocation.Y - p.Pos.Y;
+                float fallHeight = lastGroundedLocation.Y - next.Y;
                 if (fallHeight > 0) {
                     fallHeight /= 32f;
-                    fallHeight-= 3;
+                    fallHeight-= 4;
                     
                     if (fallHeight > 0) {
                         float damage = (int)fallHeight * 2;
@@ -92,7 +92,7 @@ namespace NotAwesomeSurvival {
                         TakeDamage(damage*fallDamageMultiplier, "falling");
                     }
                 }
-                lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(p.Pos.X, p.Pos.Y, p.Pos.Z);
+                lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(next.X, next.Y, next.Z);
             }
         }
         [JsonIgnoreAttribute] bool atBorder = true;

@@ -25,7 +25,6 @@ namespace NotAwesomeSurvival {
             }
         }
         public static NasBlock GetNasBlockAndFillInCollisionInformation (BlockID serverBlockID, Level lvl) {
-            //Player.Console.Message("on ID {0}", block);
             bool collides = true;
             AABB bounds;
             float fallDamageMultiplier = 1;
@@ -39,15 +38,16 @@ namespace NotAwesomeSurvival {
                     case CollideType.ClimbRope:
                     case CollideType.LiquidWater:
                     case CollideType.SwimThrough:
-                        bounds.Max.Y -= 2;
-                        //Player.Console.Message("{0} should do no fall damage", def.Name);
+                        bounds.Max.Y -= 4;
                         fallDamageMultiplier = 0;
                         break;
                     case CollideType.WalkThrough:
-                        //Player.Console.Message("collide for {0} is not solid", def.Name);
                         collides = false;
                         break;
                     default:
+                        //running down stairs will kill you at the bottom if their actual max Y is respected
+                        //make them taller so the server can know you're touching them
+                        bounds.Max.Y = 32;
                     	break;
                 }
             }
@@ -59,14 +59,12 @@ namespace NotAwesomeSurvival {
                 bounds = new AABB(0, 0, 0, 32, DefaultSet.Height(core) * 2, 32);
             }
             NasBlock nb = NasBlock.Get(ConvertToClientBlockID(serverBlockID, lvl));
-            nb.collides = collides;
-            nb.bounds = bounds;
+            //physics blocks like cold_water are also attempted to setup in this list, so only use the properties from the first one
             if (nb.fallDamageMultiplier == -1) {
+                nb.collides = collides;
+                nb.bounds = bounds;
                 nb.fallDamageMultiplier = fallDamageMultiplier;
             }
-            //else {
-            //    Player.Console.Message("already set fallDamageMultiplier for ID {0}", nb.selfID);
-            //}
             return nb;
         }
         
@@ -89,22 +87,25 @@ namespace NotAwesomeSurvival {
         
         public static bool TouchesGround(Level lvl, AABB entityAABB, Position entityPos, out float fallDamageMultiplier) {
             fallDamageMultiplier = 1;
+            AABB worldAABB = entityAABB.OffsetPosition(entityPos);
+            worldAABB.Min.X++;
+            worldAABB.Min.Z++;
             entityPos.X += entityAABB.Max.X;
             entityPos.Z += entityAABB.Max.Z;
-            if (_TouchesGround(lvl, entityAABB, entityPos, out fallDamageMultiplier)) { return true; }
+            if (_TouchesGround(lvl, worldAABB, entityPos, out fallDamageMultiplier)) { return true; }
             entityPos.X += entityAABB.Min.X*2;
-            if (_TouchesGround(lvl, entityAABB, entityPos, out fallDamageMultiplier)) { return true; }
+            if (_TouchesGround(lvl, worldAABB, entityPos, out fallDamageMultiplier)) { return true; }
             entityPos.Z += entityAABB.Min.Z*2;
-            if (_TouchesGround(lvl, entityAABB, entityPos, out fallDamageMultiplier)) { return true; }
+            if (_TouchesGround(lvl, worldAABB, entityPos, out fallDamageMultiplier)) { return true; }
             entityPos.X += entityAABB.Max.X*2;
-            if (_TouchesGround(lvl, entityAABB, entityPos, out fallDamageMultiplier)) { return true; }
+            if (_TouchesGround(lvl, worldAABB, entityPos, out fallDamageMultiplier)) { return true; }
             return false;
         }
-        public static bool _TouchesGround(Level lvl, AABB entityAABB, Position entityPos, out float fallDamageMultiplier) {
+        public static bool _TouchesGround(Level lvl, AABB entityAABB, Position posToGetBlock, out float fallDamageMultiplier) {
             fallDamageMultiplier = 1;
-            int x = entityPos.FeetBlockCoords.X;
-            int y = entityPos.FeetBlockCoords.Y;
-            int z = entityPos.FeetBlockCoords.Z;
+            int x = posToGetBlock.FeetBlockCoords.X;
+            int y = posToGetBlock.FeetBlockCoords.Y;
+            int z = posToGetBlock.FeetBlockCoords.Z;
             BlockID serverBlockID = lvl.GetBlock((ushort)x,
                                                  (ushort)y,
                                                  (ushort)z);
@@ -113,12 +114,13 @@ namespace NotAwesomeSurvival {
             if (!nasBlock.collides) { return false; }
             fallDamageMultiplier = nasBlock.fallDamageMultiplier;
             
-            entityAABB = entityAABB.OffsetPosition(entityPos);
             AABB blockAABB = nasBlock.bounds.Offset(x * 32, y * 32, z * 32);
             if (AABB.Intersects(ref entityAABB, ref blockAABB)) {
-                Player.Console.Message("nasblock ID is {0} and its fallDamageMultiplier is {1}",
-                                       nasBlock.selfID,
-                                       nasBlock.fallDamageMultiplier);
+                //Player.Console.Message("nasblock ID is {0} and its fallDamageMultiplier is {1} and its max bound Y is {2}",
+                //                       nasBlock.selfID,
+                //                       nasBlock.fallDamageMultiplier,
+                //                       nasBlock.bounds.Max.Y
+                //                      );
                 return true;
             }
             return false;
