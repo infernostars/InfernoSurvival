@@ -175,7 +175,7 @@ namespace NotAwesomeSurvival {
                 }
             }
             builder.Append(suffix);
-            string final = ColorCleanUp.CleanedString(builder.ToString());
+            string final = builder.ToString();
             p.SendCpeMessage(location, final);
 
             //p.Message("Length of it is {0}", final.Length);

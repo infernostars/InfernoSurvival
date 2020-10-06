@@ -110,7 +110,7 @@ namespace NotAwesomeSurvival {
                 return "┤";
             }
             int amount = GetAmount(nasBlock.parentID);
-            string hand = amount <= 0 ? "┤" : "╕ %f";
+            string hand = amount <= 0 ? "┤" : "╕¼";
 
             return "[" + amount + "] " + nasBlock.GetName(p) + " " + hand;
         }
