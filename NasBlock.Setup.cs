@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MCGalaxy;
+using MCGalaxy.Blocks;
 using BlockID = System.UInt16;
 
 namespace NotAwesomeSurvival {
@@ -24,8 +26,64 @@ namespace NotAwesomeSurvival {
             
             i = 8; //active water
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = 1f;
+            blocks[i].disturbDelayMax = 5f;
+            blocks[i].disturbedAction = FloodAction(Block.Water);
+            
+            
+            
+            const float waterDisturbDelayMin = 0.2f;
+            const float waterDisturbDelayMax = 0.2f;
+            
             i = 9; //still water
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 1);
+            
+            i = 632; //water flows
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 3);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 4);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 5);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 6);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 7);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 8);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 9);
+            i = 639; //waterfall
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = waterDisturbDelayMin;
+            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
+            
+            
+            
             
             
             i = 1; //Stone
@@ -72,6 +130,14 @@ namespace NotAwesomeSurvival {
 
             i = 3; //Dirt
             blocks[i] = new NasBlock(i, Material.Earth);
+            blocks[i].disturbDelayMin = 1;
+            blocks[i].disturbDelayMax = 1;
+            blocks[i].disturbedAction = (nl,x,y,z) => {
+                if (nl.lvl.GetBlock((ushort)x, (ushort)(y+1), (ushort)z) == Block.Leaves) {
+                    nl.lvl.Message("Hi! "+x+" "+y+" "+z);
+                    nl.SetBlock(x, y+1, z, Block.Dirt);
+                }
+            };
 
             i = 4; //Cobblebrick
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
@@ -130,9 +196,15 @@ namespace NotAwesomeSurvival {
 
             i = 12; //Sand
             blocks[i] = new NasBlock(i, Material.Earth, 3);
+            blocks[i].disturbDelayMin = 0.2f;
+            blocks[i].disturbDelayMax = 0.2f;
+            blocks[i].disturbedAction = FallingBlockAction(Block.Sand);
 
             i = 13; //Gravel
             blocks[i] = new NasBlock(i, Material.Earth);
+            blocks[i].disturbDelayMin = 0.2f;
+            blocks[i].disturbDelayMax = 0.2f;
+            blocks[i].disturbedAction = FallingBlockAction(Block.Gravel);
 
             i = 18; //Leaves
             blocks[i] = new NasBlock(i, Material.Leaves);

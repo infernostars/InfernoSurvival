@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using MCGalaxy;
 using MCGalaxy.Maths;
 using BlockID = System.UInt16;
+using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>;
 
 namespace NotAwesomeSurvival {
 
     public partial class NasBlock {
         public static NasBlock[] blocks = new NasBlock[Block.MaxRaw + 1];
+        public static NasBlock[] blocksIndexedByServerBlockID;
+        
         public static NasBlock Default;
         public static int[] DefaultDurabilities = new int[(int)Material.Count];
 
@@ -57,6 +60,10 @@ namespace NotAwesomeSurvival {
         public bool collides = true;
         public AABB bounds;
         public float fallDamageMultiplier = -1;
+        
+        public NasBlockAction disturbedAction = null;
+        public float disturbDelayMax = 0f;
+        public float disturbDelayMin = 0f;
 
         public NasBlock(BlockID id, Material mat) {
             selfID = id;

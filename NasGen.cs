@@ -187,6 +187,7 @@ namespace NotAwesomeSurvival {
                             }
                         }
                     }
+                nl.lvl = lvl;
                 NasLevel.all.Add(lvl.name, nl);
             }
             void CalcTemps() {
@@ -376,7 +377,7 @@ namespace NotAwesomeSurvival {
 
             bool BlockExposed(int x, int y, int z) {
                 if (lvl.IsAirAt((ushort)(x + 1), (ushort)y, (ushort)z)) { return true; }
-                if (lvl.IsAirAt((ushort)(x - 2), (ushort)y, (ushort)z)) { return true; }
+                if (lvl.IsAirAt((ushort)(x - 1), (ushort)y, (ushort)z)) { return true; }
                 if (lvl.IsAirAt((ushort)x, (ushort)(y + 1), (ushort)z)) { return true; }
                 if (lvl.IsAirAt((ushort)x, (ushort)(y - 1), (ushort)z)) { return true; }
                 if (lvl.IsAirAt((ushort)x, (ushort)y, (ushort)(z + 1))) { return true; }

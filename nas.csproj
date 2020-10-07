@@ -64,6 +64,7 @@
     <Compile Include="Crafting.Setup.cs" />
     <Compile Include="Drop.cs" />
     <Compile Include="ItemProp.Setup.cs" />
+    <Compile Include="NasBlock.Actions.cs" />
     <Compile Include="NasBlock.Setup.cs" />
     <Compile Include="NasColor.cs" />
     <Compile Include="Crafting.cs" />
@@ -79,6 +80,15 @@
     <Compile Include="NasPlayerInventory.cs" />
     <Compile Include="Nas.cs" />
     <Compile Include="NasPlayer.cs" />
+    <Compile Include="Priority Queue\FastPriorityQueue.cs" />
+    <Compile Include="Priority Queue\FastPriorityQueueNode.cs" />
+    <Compile Include="Priority Queue\GenericPriorityQueue.cs" />
+    <Compile Include="Priority Queue\GenericPriorityQueueNode.cs" />
+    <Compile Include="Priority Queue\IFixedSizePriorityQueue.cs" />
+    <Compile Include="Priority Queue\IPriorityQueue.cs" />
+    <Compile Include="Priority Queue\SimplePriorityQueue.cs" />
+    <Compile Include="Priority Queue\StablePriorityQueue.cs" />
+    <Compile Include="Priority Queue\StablePriorityQueueNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NasPlayerInventory.Items.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="NasLevel.IO.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Priority Queue" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

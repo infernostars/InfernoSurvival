@@ -84,9 +84,14 @@ namespace NotAwesomeSurvival {
                           Block.GetName(np.p, serverBlockID)
                          );
             }
-
-
-            np.p.level.UpdateBlock(np.p, x, y, z, Block.Air);
+            
+            NasLevel nl = NasLevel.all[np.p.level.name];
+            if (nl != null) {
+                //np.p.Message("Thing");
+                nl.SetBlock(x, y, z, Block.Air);
+            } else {
+                np.p.level.UpdateBlock(np.p, x, y, z, Block.Air);
+            }
 
             foreach (Player pl in np.p.level.players) {
                 NassEffect.Define(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], blockColors[nasBlock.parentID]);
@@ -133,7 +138,13 @@ namespace NotAwesomeSurvival {
                 nasBlock.station.ShowArea(np, x, y, z, Color.White);
             }
             np.inventory.SetAmount(nasBlock.parentID, -nasBlock.resourceCost);
-
+            
+            NasLevel nl = NasLevel.all[np.p.level.name];
+            if (nl != null) {
+                //np.p.Message("Thing2");
+                nl.SimulateSetBlock(x, y, z, serverBlockID);
+                //p.cancelBlock = true;
+            }
         }
 
         static void BreakTask(SchedulerTask task) {

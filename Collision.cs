@@ -8,7 +8,6 @@ using BlockID = System.UInt16;
 namespace NotAwesomeSurvival {
 
     public static class Collision {
-        public static NasBlock[] nasBlocksIndexedByServerBlockID;
         public static void Setup() {
             OnLevelLoadedEvent.Register(OnLevelLoaded, Priority.Low);
         }
@@ -19,9 +18,9 @@ namespace NotAwesomeSurvival {
             }
         }
         public static void SetupBlockBounds(Level lvl) {
-            nasBlocksIndexedByServerBlockID = new NasBlock[Block.ExtendedCount];
-            for (BlockID blockID = 0; blockID < Block.ExtendedCount-1; blockID++) {
-                nasBlocksIndexedByServerBlockID[blockID] = GetNasBlockAndFillInCollisionInformation(blockID, lvl);
+            NasBlock.blocksIndexedByServerBlockID = new NasBlock[Block.ExtendedCount];
+            for (BlockID blockID = 0; blockID < Block.ExtendedCount; blockID++) {
+                NasBlock.blocksIndexedByServerBlockID[blockID] = GetNasBlockAndFillInCollisionInformation(blockID, lvl);
             }
         }
         public static NasBlock GetNasBlockAndFillInCollisionInformation (BlockID serverBlockID, Level lvl) {
@@ -110,7 +109,7 @@ namespace NotAwesomeSurvival {
                                                  (ushort)y,
                                                  (ushort)z);
             if (serverBlockID == Block.Air) { return false; }
-            NasBlock nasBlock = nasBlocksIndexedByServerBlockID[serverBlockID];
+            NasBlock nasBlock = NasBlock.blocksIndexedByServerBlockID[serverBlockID];
             if (!nasBlock.collides) { return false; }
             fallDamageMultiplier = nasBlock.fallDamageMultiplier;
             

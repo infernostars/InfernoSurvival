@@ -88,7 +88,7 @@ namespace NotAwesomeSurvival {
                     if (fallHeight > 0) {
                         float damage = (int)fallHeight * 2;
                         damage /= 4;
-                        p.Message("damage is {0}", damage*fallDamageMultiplier);
+                        //p.Message("damage is {0}", damage*fallDamageMultiplier);
                         TakeDamage(damage*fallDamageMultiplier, "falling");
                     }
                 }

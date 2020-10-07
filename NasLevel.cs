@@ -1,72 +1,140 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Newtonsoft.Json;
 using MCGalaxy;
+using MCGalaxy.Tasks;
 using MCGalaxy.Events.LevelEvents;
+using BlockID = System.UInt16;
+using Priority_Queue;
 
 namespace NotAwesomeSurvival {
 
-    public class NasLevel {
-        public static void Setup() {
-            OnLevelLoadEvent.Register(OnLevelLoad, Priority.High);
-            OnLevelUnloadEvent.Register(OnLevelUnload, Priority.Low);
-            OnLevelDeletedEvent.Register(OnLevelDeleted, Priority.Low);
-            OnLevelRenamedEvent.Register(OnLevelRenamed, Priority.Low);
+    public partial class NasLevel {
+        static Scheduler TickScheduler;
+        static TimeSpan tickDelay = TimeSpan.FromMilliseconds(100);
+        static Random r = new Random();
+        public class QueuedBlockUpdate {
+            public int x, y, z;
+            public NasBlock nb;
+            public DateTime date;
         }
-        public static void TakeDown() {
-            OnLevelLoadEvent.Unregister(OnLevelLoad);
-            OnLevelUnloadEvent.Unregister(OnLevelUnload);
-            OnLevelDeletedEvent.Unregister(OnLevelDeleted);
-            OnLevelRenamedEvent.Unregister(OnLevelRenamed);
-        }
-        const string Path = Nas.Path + "leveldata/";
-        const string Extension = ".json";
+        
         [JsonIgnoreAttribute] public static Dictionary<string, NasLevel> all = new Dictionary<string, NasLevel>();
-        //public string name;
-        public static string GetFileName(string name) {
-            return Path + name + Extension;
-        }
+        [JsonIgnoreAttribute] public Level lvl;
         public ushort[,] heightmap;
-
-        public static void Unload(string name, NasLevel nl) {
-            string jsonString;
-            jsonString = JsonConvert.SerializeObject(nl, Formatting.Indented);
-            string fileName = GetFileName(name);
-            File.WriteAllText(fileName, jsonString);
-            Logger.Log(LogType.Debug, "Unloaded NasLevel " + fileName + "!");
-            all.Remove(name);
+        [JsonIgnoreAttribute] public SimplePriorityQueue<QueuedBlockUpdate, DateTime> tickQueue = new SimplePriorityQueue<QueuedBlockUpdate, DateTime>();
+        [JsonIgnore] public SchedulerTask schedulerTask;
+        
+        public void BeginTickTask() {
+            if (TickScheduler == null) TickScheduler = new Scheduler("NasLevelTickScheduler");
+            schedulerTask = TickScheduler.QueueRepeat(TickLevelCallback, this, tickDelay);
         }
-
-
-        static void OnLevelLoad(string name) {
-            NasLevel nl = new NasLevel();
-            string fileName = GetFileName(name);
-            if (File.Exists(fileName)) {
-                string jsonString = File.ReadAllText(fileName);
-                nl = JsonConvert.DeserializeObject<NasLevel>(jsonString);
-                all.Add(name, nl);
-                Logger.Log(LogType.Debug, "Loaded NasLevel " + fileName + "!");
+        public void EndTickTask() {
+            TickScheduler.Cancel(schedulerTask);
+        }
+        static void TickLevelCallback(SchedulerTask task) {
+            NasLevel nl = (NasLevel)task.State;
+            nl.Tick();
+        }
+        public void Tick() {
+            if (tickQueue.Count < 1) { return; }
+            while (tickQueue.First.date < DateTime.UtcNow) {
+                QueuedBlockUpdate qb = tickQueue.First;
+                //lvl.Message("ticking for you gordon. in the test chamber");
+                if (NasBlock.blocksIndexedByServerBlockID[lvl.GetBlock((ushort)qb.x, (ushort)qb.y, (ushort)qb.z)].selfID == qb.nb.selfID) {
+                    qb.nb.disturbedAction(this, qb.x, qb.y, qb.z);
+                }
+                tickQueue.Dequeue();
+                if (tickQueue.Count < 1) { break; }
             }
         }
-        static void OnLevelUnload(Level lvl) {
-            if (!all.ContainsKey(lvl.name)) { return; }
-            Unload(lvl.name, all[lvl.name]);
+        
+        public void SetBlock(int x, int y, int z, BlockID serverBlockID) {
+            if (
+                x >= lvl.Width ||
+                x < 0 ||
+                y >= lvl.Height ||
+                y < 0 ||
+                z >= lvl.Length ||
+                z < 0
+               )
+            { return; }
+            lvl.Blockchange((ushort)x, (ushort)y, (ushort)z, serverBlockID);
+            DisturbBlocks(x, y, z);
         }
-        static void OnLevelDeleted(string name) {
-            string fileName = Path + name + Extension;
-            if (File.Exists(fileName)) {
-                File.Delete(fileName);
-                Logger.Log(LogType.Debug, "Deleted NasLevel " + fileName + "!");
-            }
+        
+        public void SimulateSetBlock(int x, int y, int z, BlockID serverBlockID) {
+            if (
+                x >= lvl.Width ||
+                x < 0 ||
+                y >= lvl.Height ||
+                y < 0 ||
+                z >= lvl.Length ||
+                z < 0
+               )
+            { return; }
+            lvl.SetBlock((ushort)x, (ushort)y, (ushort)z, serverBlockID);
+            DisturbBlocks(x, y, z);
         }
-        static void OnLevelRenamed(string srcMap, string dstMap) {
-            string fileName = Path + srcMap + Extension;
-            if (File.Exists(fileName)) {
-                string newFileName = Path + dstMap + Extension;
-                File.Move(fileName, newFileName);
-                Logger.Log(LogType.Debug, "Renamed NasLevel " + fileName + " to " + newFileName + "!");
-                //Unload(srcMap, all[srcMap]);
-            }
+        public void DisturbBlocks(int x, int y, int z) {
+            DisturbBlock(x, y, z);
+            
+            DisturbBlock(x+1, y, z);
+            DisturbBlock(x-1, y, z);
+            
+            DisturbBlock(x, y+1, z);
+            DisturbBlock(x, y-1, z);
+            
+            DisturbBlock(x, y, z+1);
+            DisturbBlock(x, y, z-1);
+        }
+        /// <summary>
+        /// Call to make the nasBlock at this location queue its "whatHappensWhenDisturbed" function.
+        /// </summary>
+        private void DisturbBlock(int x, int y, int z) {
+            if (
+                x >= lvl.Width ||
+                x < 0 ||
+                y >= lvl.Height ||
+                y < 0 ||
+                z >= lvl.Length ||
+                z < 0
+               )
+            { return; }
+            
+            NasBlock nb = NasBlock.blocksIndexedByServerBlockID[lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z)];
+            if (nb.disturbedAction == null) { return; }
+            QueuedBlockUpdate qb = new QueuedBlockUpdate();
+            qb.x = x;
+            qb.y = y;
+            qb.z = z;
+            float seconds = (float)(r.NextDouble() * (nb.disturbDelayMax - nb.disturbDelayMin) + nb.disturbDelayMin);
+            qb.date = DateTime.UtcNow + TimeSpan.FromSeconds(seconds);
+            qb.date = qb.date.Floor(tickDelay);
+            qb.nb = nb;
+            //lvl.Message("queueing thing "+qb.date.ToString("hh:mm:ss.fff tt"));
+            tickQueue.Enqueue(qb, qb.date);
+        }
+        public BlockID GetBlock(int x, int y, int z) {
+            return lvl.GetBlock((ushort)x, (ushort)y, (ushort)z);
+        }
+
+    }
+    
+    public static class DateExtensions {
+        public static DateTime Round(this DateTime date, TimeSpan span) {
+            long ticks = (date.Ticks + (span.Ticks / 2) + 1)/ span.Ticks;
+            return new DateTime(ticks * span.Ticks);
+        }
+        public static DateTime Floor(this DateTime date, TimeSpan span) {
+            long ticks = (date.Ticks / span.Ticks);
+            return new DateTime(ticks * span.Ticks);
+        }
+        public static DateTime Ceil(this DateTime date, TimeSpan span) {
+            long ticks = (date.Ticks + span.Ticks - 1) / span.Ticks;
+            return new DateTime(ticks * span.Ticks);
         }
     }
 

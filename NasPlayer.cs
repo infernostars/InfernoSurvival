@@ -112,6 +112,7 @@ namespace NotAwesomeSurvival {
         /// <param name="source"></param>
         /// <returns></returns>
         public bool TakeDamage(float damage, string source = "unknown causes") {
+            if (p.invincible) { return false; }
             TimeSpan timeSinceDeath = DateTime.UtcNow.Subtract(lastDeathDate);
             if (timeSinceDeath.TotalMilliseconds < 2000) {
                 //p.Message("You cannot take damage after dying until 2 seconds have passed");
