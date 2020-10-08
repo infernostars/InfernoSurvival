@@ -73,8 +73,9 @@ namespace NotAwesomeSurvival {
         }
 
         static void BreakBlock(NasPlayer np, ushort x, ushort y, ushort z, BlockID serverBlockID, NasBlock nasBlock) {
-
-
+            BlockID here = np.p.level.GetBlock(x, y, z);
+            if (here != serverBlockID) { return; } //don't let them break it if the block changed since we've started
+            
             if (nasBlock.parentID != 0) {
                 Drop drop = nasBlock.dropHandler(nasBlock.parentID);
                 np.inventory.GetDrop(drop);
