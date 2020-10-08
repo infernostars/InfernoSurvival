@@ -21,6 +21,12 @@ namespace NotAwesomeSurvival {
             OnLevelUnloadEvent.Unregister(OnLevelUnload);
             OnLevelDeletedEvent.Unregister(OnLevelDeleted);
             OnLevelRenamedEvent.Unregister(OnLevelRenamed);
+            
+            Level[] loadedLevels = LevelInfo.Loaded.Items;
+            foreach (Level lvl in loadedLevels) {
+                if (!all.ContainsKey(lvl.name)) { return; }
+                Unload(lvl.name, all[lvl.name]);
+            }
         }
         public static string GetFileName(string name) {
             return Path + name + Extension;
@@ -34,15 +40,19 @@ namespace NotAwesomeSurvival {
             Logger.Log(LogType.Debug, "Unloaded(saved) NasLevel " + fileName + "!");
             all.Remove(name);
         }
-        static void OnLevelLoaded(Level lvl) {
+        public static void OnLevelLoaded(Level lvl) {
+            if (NasBlock.blocksIndexedByServerBlockID == null) {
+                //Player.Console.Message("This has to be filled in before NasLevels can work");
+                return;
+            }
             NasLevel nl = new NasLevel();
             string fileName = GetFileName(lvl.name);
             if (File.Exists(fileName)) {
                 string jsonString = File.ReadAllText(fileName);
                 nl = JsonConvert.DeserializeObject<NasLevel>(jsonString);
                 nl.lvl = lvl;
-                nl.BeginTickTask();
                 all.Add(lvl.name, nl);
+                nl.BeginTickTask();
                 Logger.Log(LogType.Debug, "Loaded NasLevel " + fileName + "!");
             }
         }

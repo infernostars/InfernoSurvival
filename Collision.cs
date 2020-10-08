@@ -22,6 +22,7 @@ namespace NotAwesomeSurvival {
             for (BlockID blockID = 0; blockID < Block.ExtendedCount; blockID++) {
                 NasBlock.blocksIndexedByServerBlockID[blockID] = GetNasBlockAndFillInCollisionInformation(blockID, lvl);
             }
+            NasLevel.OnLevelLoaded(lvl);
         }
         public static NasBlock GetNasBlockAndFillInCollisionInformation (BlockID serverBlockID, Level lvl) {
             bool collides = true;

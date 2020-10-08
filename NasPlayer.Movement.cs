@@ -28,8 +28,6 @@ namespace NotAwesomeSurvival {
         public void SpawnPlayer(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (level.Config.Deletable && level.Config.Buildable) { return; } //not a nas map
 
-            Player.Console.Message("SpawnPlayer");
-
             inventory.Setup();
             if (!hasBeenSpawned) { SpawnPlayerFirstTime(level, ref spawnPos, ref yaw, ref pitch); return; }
 
@@ -39,7 +37,6 @@ namespace NotAwesomeSurvival {
                 yaw = transferInfo.yawBeforeMapChange;
                 pitch = transferInfo.pitchBeforeMapChange;
 
-                p.Message("You got spawned");
                 atBorder = true;
                 transferInfo = null;
             }

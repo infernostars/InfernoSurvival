@@ -18,6 +18,7 @@ namespace NotAwesomeSurvival {
         static Random r = new Random();
         public class BlockLocation {
             public int X, Y, Z;
+            //public BlockLocation() { }
             public BlockLocation(QueuedBlockUpdate qb) {
                 X = qb.x; Y = qb.y; Z = qb.z;
             }
@@ -38,15 +39,16 @@ namespace NotAwesomeSurvival {
         public void BeginTickTask() {
             if (TickScheduler == null) TickScheduler = new Scheduler("NasLevelTickScheduler");
             
+            Player.Console.Message("Re-disturbing {0} blocks.", blocksThatMustBeDisturbed.Count);
             foreach (BlockLocation blockLoc in blocksThatMustBeDisturbed) {
                 DisturbBlock(blockLoc.X, blockLoc.Y, blockLoc.Z);
-                Player.Console.Message("disturbing block at {0} {1} {2}", blockLoc.X, blockLoc.Y, blockLoc.Z);
             }
             blocksThatMustBeDisturbed.Clear();
             schedulerTask = TickScheduler.QueueRepeat(TickLevelCallback, this, tickDelay);
         }
         public void EndTickTask() {
             TickScheduler.Cancel(schedulerTask);
+            Player.Console.Message("Saving {0} blocks to re-disturb later.", tickQueue.Count);
             if (tickQueue.Count == 0) { return; }
             
             blocksThatMustBeDisturbed = new List<BlockLocation>();
@@ -54,7 +56,6 @@ namespace NotAwesomeSurvival {
                 BlockLocation blockLoc = new BlockLocation(qb);
                 if (blocksThatMustBeDisturbed.Contains(blockLoc)) { continue; }
                 blocksThatMustBeDisturbed.Add(blockLoc);
-                Player.Console.Message("saving location to disturb later at {0} {1} {2}", qb.x, qb.y, qb.z);
             }
             tickQueue.Clear();
         }
@@ -66,7 +67,6 @@ namespace NotAwesomeSurvival {
             if (tickQueue.Count < 1) { return; }
             while (tickQueue.First.date < DateTime.UtcNow) {
                 QueuedBlockUpdate qb = tickQueue.First;
-                //lvl.Message("ticking for you gordon. in the test chamber");
                 if (NasBlock.blocksIndexedByServerBlockID[lvl.GetBlock((ushort)qb.x, (ushort)qb.y, (ushort)qb.z)].selfID == qb.nb.selfID) {
                     qb.nb.disturbedAction(this, qb.x, qb.y, qb.z);
                 }
@@ -136,7 +136,6 @@ namespace NotAwesomeSurvival {
                 z < 0
                )
             { return; }
-            
             NasBlock nb = NasBlock.blocksIndexedByServerBlockID[lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z)];
             if (nb.disturbedAction == null) { return; }
             QueuedBlockUpdate qb = new QueuedBlockUpdate();
