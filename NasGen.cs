@@ -76,6 +76,7 @@ namespace NotAwesomeSurvival {
 
             lvl.Config.Deletable = false;
             lvl.Config.MOTD = "-hax +thirdperson";
+            lvl.Config.GrassGrow = false;
             TimeSpan timeTaken = DateTime.UtcNow.Subtract(dateStart);
             p.Message("Done in {0}", timeTaken.Shorten(true, true));
 
@@ -188,7 +189,8 @@ namespace NotAwesomeSurvival {
                         }
                     }
                 nl.lvl = lvl;
-                NasLevel.all.Add(lvl.name, nl);
+                NasLevel.Unload(lvl.name, nl);
+                //NasLevel.all.Add(lvl.name, nl);
             }
             void CalcTemps() {
                 p.Message("Calculating temperatures");

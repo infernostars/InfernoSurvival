@@ -32,8 +32,8 @@ namespace NotAwesomeSurvival {
             
             
             
-            const float waterDisturbDelayMin = 0.2f;
-            const float waterDisturbDelayMax = 0.2f;
+            const float waterDisturbDelayMin = 0.5f;
+            const float waterDisturbDelayMax = 0.5f;
             
             i = 9; //still water
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
@@ -112,9 +112,14 @@ namespace NotAwesomeSurvival {
             i = 163; //Cobblestone-U (next is D)
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i, blocks[163]);
-
+            
+            const float grassDelayMin = 10;
+            const float grassDelayMax = 60;
             i = 2; //Grass
             blocks[i] = new NasBlock(i, Material.Earth);
+            blocks[i].disturbDelayMin = grassDelayMin;
+            blocks[i].disturbDelayMax = grassDelayMax;
+            blocks[i].disturbedAction = GrassBlockAction(Block.Grass, Block.Dirt);
             blocks[i].dropHandler = (dropID) => {
                 Drop grassDrop = new Drop();
                 grassDrop.blockStacks = new List<BlockStack>();
@@ -130,14 +135,9 @@ namespace NotAwesomeSurvival {
 
             i = 3; //Dirt
             blocks[i] = new NasBlock(i, Material.Earth);
-            blocks[i].disturbDelayMin = 1;
-            blocks[i].disturbDelayMax = 1;
-            blocks[i].disturbedAction = (nl,x,y,z) => {
-                if (nl.lvl.GetBlock((ushort)x, (ushort)(y+1), (ushort)z) == Block.Leaves) {
-                    nl.lvl.Message("Hi! "+x+" "+y+" "+z);
-                    nl.SetBlock(x, y+1, z, Block.Dirt);
-                }
-            };
+            blocks[i].disturbDelayMin = grassDelayMin;
+            blocks[i].disturbDelayMax = grassDelayMax;
+            blocks[i].disturbedAction = DirtBlockAction(grassSet, Block.Dirt);
 
             i = 4; //Cobblebrick
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);

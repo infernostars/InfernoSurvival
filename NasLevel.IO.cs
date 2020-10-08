@@ -31,7 +31,7 @@ namespace NotAwesomeSurvival {
             jsonString = JsonConvert.SerializeObject(nl, Formatting.Indented);
             string fileName = GetFileName(name);
             File.WriteAllText(fileName, jsonString);
-            Logger.Log(LogType.Debug, "Unloaded NasLevel " + fileName + "!");
+            Logger.Log(LogType.Debug, "Unloaded(saved) NasLevel " + fileName + "!");
             all.Remove(name);
         }
         static void OnLevelLoaded(Level lvl) {

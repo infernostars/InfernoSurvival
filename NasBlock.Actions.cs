@@ -13,6 +13,7 @@ namespace NotAwesomeSurvival {
             return (nl,x,y,z) => {
                 if (nl.GetBlock(x, y-1, z) == Block.Air) {
                     nl.SetBlock(x, y-1, z, serverBlockID);
+                    return;
                 }
                 if (nl.GetBlock(x+1, y, z) == Block.Air) {
                     nl.SetBlock(x+1, y, z, serverBlockID);
@@ -147,6 +148,36 @@ namespace NotAwesomeSurvival {
                 if (blockUnder == Block.Air || IsPartOfSet(waterSet, blockUnder) != -1) {
                     nl.SetBlock(x, y, z, Block.Air);
                     nl.SetBlock(x, y-1, z, serverBlockID);
+                }
+            };
+        }
+        static NasBlockAction GrassBlockAction(BlockID grass, BlockID dirt) {
+            return (nl,x,y,z) => {
+                BlockID aboveHere = nl.GetBlock(x, y+1, z);
+                if (!nl.lvl.LightPasses(aboveHere)) {
+                    nl.SetBlock(x, y, z, dirt);
+                }
+            };
+        }
+        static BlockID[] grassSet = new BlockID[] { Block.Grass, Block.Extended|119, Block.Extended|129 };
+        static NasBlockAction DirtBlockAction(BlockID[] grassSet, BlockID dirt) {
+            return (nl,x,y,z) => {
+                BlockID aboveHere = nl.GetBlock(x, y+1, z);
+                if (!nl.lvl.LightPasses(aboveHere)) {
+                    //nl.lvl.Message("Can't grow since solid above");
+                    return;
+                }
+                
+                for (int xOff = -1; xOff <= 1; xOff++)
+                    for (int yOff = -1; yOff <= 1; yOff++)
+                        for (int zOff = -1; zOff <= 1; zOff++)
+                {
+                    if (xOff == 0 && yOff == -1 && zOff == 0) { continue; }
+                    BlockID neighbor = nl.GetBlock(x+xOff, y+yOff, z+zOff);
+                    int setIndex = IsPartOfSet(grassSet, neighbor);
+                    if (setIndex == -1) { continue; }
+                    nl.SetBlock(x, y, z, grassSet[setIndex], true);
+                    return;
                 }
             };
         }

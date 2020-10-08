@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 using MCGalaxy;
+using MCGalaxy.Maths;
 using MCGalaxy.Tasks;
 using MCGalaxy.Events.LevelEvents;
 using BlockID = System.UInt16;
@@ -15,7 +16,13 @@ namespace NotAwesomeSurvival {
         static Scheduler TickScheduler;
         static TimeSpan tickDelay = TimeSpan.FromMilliseconds(100);
         static Random r = new Random();
-        public class QueuedBlockUpdate {
+        public class BlockLocation {
+            public int X, Y, Z;
+            public BlockLocation(QueuedBlockUpdate qb) {
+                X = qb.x; Y = qb.y; Z = qb.z;
+            }
+        }
+        public struct QueuedBlockUpdate {
             public int x, y, z;
             public NasBlock nb;
             public DateTime date;
@@ -24,15 +31,32 @@ namespace NotAwesomeSurvival {
         [JsonIgnoreAttribute] public static Dictionary<string, NasLevel> all = new Dictionary<string, NasLevel>();
         [JsonIgnoreAttribute] public Level lvl;
         public ushort[,] heightmap;
+        public List<BlockLocation> blocksThatMustBeDisturbed = new List<BlockLocation>();
         [JsonIgnoreAttribute] public SimplePriorityQueue<QueuedBlockUpdate, DateTime> tickQueue = new SimplePriorityQueue<QueuedBlockUpdate, DateTime>();
         [JsonIgnore] public SchedulerTask schedulerTask;
         
         public void BeginTickTask() {
             if (TickScheduler == null) TickScheduler = new Scheduler("NasLevelTickScheduler");
+            
+            foreach (BlockLocation blockLoc in blocksThatMustBeDisturbed) {
+                DisturbBlock(blockLoc.X, blockLoc.Y, blockLoc.Z);
+                Player.Console.Message("disturbing block at {0} {1} {2}", blockLoc.X, blockLoc.Y, blockLoc.Z);
+            }
+            blocksThatMustBeDisturbed.Clear();
             schedulerTask = TickScheduler.QueueRepeat(TickLevelCallback, this, tickDelay);
         }
         public void EndTickTask() {
             TickScheduler.Cancel(schedulerTask);
+            if (tickQueue.Count == 0) { return; }
+            
+            blocksThatMustBeDisturbed = new List<BlockLocation>();
+            foreach (QueuedBlockUpdate qb in tickQueue) {
+                BlockLocation blockLoc = new BlockLocation(qb);
+                if (blocksThatMustBeDisturbed.Contains(blockLoc)) { continue; }
+                blocksThatMustBeDisturbed.Add(blockLoc);
+                Player.Console.Message("saving location to disturb later at {0} {1} {2}", qb.x, qb.y, qb.z);
+            }
+            tickQueue.Clear();
         }
         static void TickLevelCallback(SchedulerTask task) {
             NasLevel nl = (NasLevel)task.State;
@@ -51,7 +75,7 @@ namespace NotAwesomeSurvival {
             }
         }
         
-        public void SetBlock(int x, int y, int z, BlockID serverBlockID) {
+        public void SetBlock(int x, int y, int z, BlockID serverBlockID, bool disturbDiagonals = false) {
             if (
                 x >= lvl.Width ||
                 x < 0 ||
@@ -62,10 +86,10 @@ namespace NotAwesomeSurvival {
                )
             { return; }
             lvl.Blockchange((ushort)x, (ushort)y, (ushort)z, serverBlockID);
-            DisturbBlocks(x, y, z);
+            DisturbBlocks(x, y, z, disturbDiagonals);
         }
         
-        public void SimulateSetBlock(int x, int y, int z, BlockID serverBlockID) {
+        public void SimulateSetBlock(int x, int y, int z, BlockID serverBlockID, bool disturbDiagonals = false) {
             if (
                 x >= lvl.Width ||
                 x < 0 ||
@@ -76,9 +100,18 @@ namespace NotAwesomeSurvival {
                )
             { return; }
             lvl.SetBlock((ushort)x, (ushort)y, (ushort)z, serverBlockID);
-            DisturbBlocks(x, y, z);
+            DisturbBlocks(x, y, z, disturbDiagonals);
         }
-        public void DisturbBlocks(int x, int y, int z) {
+        public void DisturbBlocks(int x, int y, int z, bool diagonals = false) {
+            if (diagonals) {
+                for (int xOff = -1; xOff <= 1; xOff++)
+                    for (int yOff = -1; yOff <= 1; yOff++)
+                        for (int zOff = -1; zOff <= 1; zOff++)
+                {
+                    DisturbBlock(x+xOff, y+yOff, z+zOff);
+                }
+                return;
+            }
             DisturbBlock(x, y, z);
             
             DisturbBlock(x+1, y, z);

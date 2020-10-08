@@ -141,7 +141,7 @@ namespace NotAwesomeSurvival {
             
             NasLevel nl = NasLevel.all[np.p.level.name];
             if (nl != null) {
-                //np.p.Message("Thing2");
+
                 nl.SimulateSetBlock(x, y, z, serverBlockID);
                 //p.cancelBlock = true;
             }
