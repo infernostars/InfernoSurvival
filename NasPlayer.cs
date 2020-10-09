@@ -58,47 +58,8 @@ namespace NotAwesomeSurvival {
             BlockID serverBlockID = p.level.GetBlock(x, y, z);
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
-            if (nasBlock.station != null) {
-                lock (Crafting.locker) {
-                    Crafting.Recipe recipe = Crafting.GetRecipe(p, x, y, z, nasBlock.station);
-                    if (recipe == null) {
-                        nasBlock.station.ShowArea(this, x, y, z, Color.Red, 500, 127);
-
-                    } else {
-
-                        Drop dropClone = new Drop();
-                        if (recipe.drop.blockStacks != null) {
-                            dropClone.blockStacks = new List<BlockStack>();
-                            foreach (BlockStack bs in recipe.drop.blockStacks) {
-                                BlockStack bsClone = new BlockStack(bs.ID, bs.amount);
-                                dropClone.blockStacks.Add(bsClone);
-                            }
-                        }
-                        if (recipe.drop.items != null) {
-                            dropClone.items = new List<Item>();
-                            foreach (Item item in recipe.drop.items) {
-                                Item itemClone = new Item(item.name);
-                                dropClone.items.Add(itemClone);
-                            }
-                        }
-                        inventory.GetDrop(dropClone, true);
-                        nasBlock.station.ShowArea(this, x, y, z, Color.LightGreen, 500);
-                        bool clearCraftingArea = button == MouseButton.Left;
-                        var patternCost = recipe.patternCost;
-                        foreach (KeyValuePair<BlockID, int> pair in patternCost) {
-                            if (inventory.GetAmount(pair.Key) < pair.Value) {
-                                clearCraftingArea = true; break;
-                            }
-                        }
-                        if (clearCraftingArea) {
-                            Crafting.ClearCraftingArea(p, x, y, z, nasBlock.station.ori);
-                        } else {
-                            foreach (KeyValuePair<BlockID, int> pair in patternCost) {
-                                inventory.SetAmount(pair.Key, -pair.Value, false);
-                            }
-                        }
-                    }
-                }
+            if (nasBlock.interaction != null) {
+                nasBlock.interaction(this, button, nasBlock, false, x, y, z);
             }
         }
         public override void ChangeHealth(float diff) {

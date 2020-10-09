@@ -159,7 +159,7 @@ namespace NotAwesomeSurvival {
                             if (value > threshold) {
                                 lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Stone);
                             } else if (y < oceanHeight) {
-                                lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.StillWater);
+                                lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Water);
                             }
                         }
                     TimeSpan span = DateTime.UtcNow.Subtract(dateStartLayer);

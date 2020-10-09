@@ -4,6 +4,9 @@ using MCGalaxy;
 using MCGalaxy.Maths;
 using BlockID = System.UInt16;
 using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>;
+using NasBlockInteraction =
+    System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton,
+    NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
 namespace NotAwesomeSurvival {
 
@@ -64,6 +67,7 @@ namespace NotAwesomeSurvival {
         public NasBlockAction disturbedAction = null;
         public float disturbDelayMax = 0f;
         public float disturbDelayMin = 0f;
+        public NasBlockInteraction interaction = null;
 
         public NasBlock(BlockID id, Material mat) {
             selfID = id;
@@ -99,6 +103,12 @@ namespace NotAwesomeSurvival {
                 station.name = parent.station.name;
                 station.type = parent.station.type;
                 station.ori = parent.station.ori;
+            }
+            if (parent.disturbedAction != null) {
+                this.disturbedAction = parent.disturbedAction;
+            }
+            if (parent.interaction != null) {
+                this.interaction = parent.interaction;
             }
         }
     }

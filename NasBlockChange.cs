@@ -131,12 +131,8 @@ namespace NotAwesomeSurvival {
                 CancelPlacedBlock(p, x, y, z);
                 return;
             }
-            if (nasBlock.station != null) {
-                p.Message("You placed a {0}!", nasBlock.station.name);
-                p.Message("Click it with nothing held (press G) to craft.");
-                p.Message("Right click to auto-replace recipe.");
-                p.Message("Left click for one-and-done.");
-                nasBlock.station.ShowArea(np, x, y, z, Color.White);
+            if (nasBlock.interaction != null) {
+                nasBlock.interaction(np, MouseButton.Right, nasBlock, true, x, y, z);
             }
             np.inventory.SetAmount(nasBlock.parentID, -nasBlock.resourceCost);
             
