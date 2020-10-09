@@ -8,44 +8,60 @@ using MCGalaxy.Maths;
 using BlockID = System.UInt16;
 using NasBlockInteraction =
     System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton,
+    NotAwesomeSurvival.NasBlock, ushort, ushort, ushort>;
+using NasBlockExistAction =
+    System.Action<NotAwesomeSurvival.NasPlayer,
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
 namespace NotAwesomeSurvival {
 
     public partial class NasBlock {
-        
-        static NasBlockInteraction CraftingInteraction() {
-            return (np,button,nasBlock,justGotPlaced,x,y,z) => {
-                    if (justGotPlaced) {
-                        np.p.Message("You placed a {0}!", nasBlock.station.name);
-                        np.p.Message("Click it with nothing held (press G) to craft.");
-                        np.p.Message("Right click to auto-replace recipe.");
-                        np.p.Message("Left click for one-and-done.");
-                        nasBlock.station.ShowArea(np, x, y, z, Color.White);
+            
+            
+            public class Entity {
+                public static readonly object locker = new object();
+                public ushort x, y, z;
+                public Drop contents = null;
+            }
+            
+            public class Container {
+                public enum Type { Chest, Barrel, Crate }
+                public Type type;
+                public string name { get { return Type.GetName(typeof(Type), type); } }
+                public Container() { }
+                public Container(Container parent) {
+                    type = parent.type;
+                }
+            }
+            
+            static NasBlockExistAction ContainerExistAction() {
+                return (np,nasBlock,exists,x,y,z) => {
+                    if (exists) {
+                        np.p.Message("You placed a {0}!", nasBlock.container.name);
+                        
                         return;
                     }
+                    np.p.Message("You destroyed a {0}!", nasBlock.container.name);
+                };
+            }
+            static NasBlockInteraction ContainerInteraction() {
+                return (np,button,nasBlock,x,y,z) => {
+                    lock (Entity.locker) {
+                        np.p.Message("hi");
+                    }
+                };
+            }
+            
+            static NasBlockInteraction CraftingInteraction() {
+                return (np,button,nasBlock,x,y,z) => {
                     lock (Crafting.locker) {
                         Crafting.Recipe recipe = Crafting.GetRecipe(np.p, x, y, z, nasBlock.station);
                         if (recipe == null) {
                             nasBlock.station.ShowArea(np, x, y, z, Color.Red, 500, 127);
                             return;
                         }
+                        Drop dropClone = new Drop(recipe.drop);
                         
-                        Drop dropClone = new Drop();
-                        if (recipe.drop.blockStacks != null) {
-                            dropClone.blockStacks = new List<BlockStack>();
-                            foreach (BlockStack bs in recipe.drop.blockStacks) {
-                                BlockStack bsClone = new BlockStack(bs.ID, bs.amount);
-                                dropClone.blockStacks.Add(bsClone);
-                            }
-                        }
-                        if (recipe.drop.items != null) {
-                            dropClone.items = new List<Item>();
-                            foreach (Item item in recipe.drop.items) {
-                                Item itemClone = new Item(item.name);
-                                dropClone.items.Add(itemClone);
-                            }
-                        }
                         np.inventory.GetDrop(dropClone, true);
                         nasBlock.station.ShowArea(np, x, y, z, Color.LightGreen, 500);
                         bool clearCraftingArea = button == MouseButton.Left;
@@ -63,9 +79,21 @@ namespace NotAwesomeSurvival {
                             }
                         }
                     }
-                
-            };
-        }
+                };
+            }
+            static NasBlockExistAction CraftingExistAction() {
+                return (np,nasBlock,exists,x,y,z) => {
+                    if (exists) {
+                        np.p.Message("You placed a {0}!", nasBlock.station.name);
+                        np.p.Message("Click it with nothing held (press G) to craft.");
+                        np.p.Message("Right click to auto-replace recipe.");
+                        np.p.Message("Left click for one-and-done.");
+                        nasBlock.station.ShowArea(np, x, y, z, Color.White);
+                        return;
+                    }
+                    np.p.Message("You destroyed a {0}!", nasBlock.station.name);
+                };
+            }
         
     }
 

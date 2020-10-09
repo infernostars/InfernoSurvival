@@ -10,6 +10,22 @@ namespace NotAwesomeSurvival {
         public Drop() {
 
         }
+        public Drop(Drop parent) {
+            if (parent.blockStacks != null) {
+                this.blockStacks = new List<BlockStack>();
+                foreach (BlockStack bs in parent.blockStacks) {
+                    BlockStack bsClone = new BlockStack(bs.ID, bs.amount);
+                    this.blockStacks.Add(bsClone);
+                }
+            }
+            if (parent.items != null) {
+                this.items = new List<Item>();
+                foreach (Item item in parent.items) {
+                    Item itemClone = new Item(item.name);
+                    this.items.Add(itemClone);
+                }
+            }
+        }
         public Drop(BlockID clientBlockID, int amount = 1) {
             BlockStack bs = new BlockStack(clientBlockID, amount);
             blockStacks = new List<BlockStack>();

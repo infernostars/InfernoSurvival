@@ -14,6 +14,7 @@ namespace NotAwesomeSurvival {
 
     public partial class NasPlayer : NasEntity {
         [NonSerialized()] public Player p;
+        [JsonIgnore] public NasLevel nl;
         [NonSerialized()] public NasBlock heldNasBlock = NasBlock.Default;
         [NonSerialized()] public ushort breakX = ushort.MaxValue, breakY = ushort.MaxValue, breakZ = ushort.MaxValue;
         [NonSerialized()] public int breakAttempt = 0;
@@ -59,7 +60,7 @@ namespace NotAwesomeSurvival {
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
             if (nasBlock.interaction != null) {
-                nasBlock.interaction(this, button, nasBlock, false, x, y, z);
+                nasBlock.interaction(this, button, nasBlock, x, y, z);
             }
         }
         public override void ChangeHealth(float diff) {

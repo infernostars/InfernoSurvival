@@ -38,6 +38,14 @@ namespace NotAwesomeSurvival {
             /// </summary>
             public enum Orientation { None, WE, NS }
             public Orientation ori = Orientation.None;
+            
+            public Station() { }
+            public Station(Station parent) {
+                name = parent.name;
+                type = parent.type;
+                ori = parent.ori;
+            }
+            
             public void ShowArea(NasPlayer np, ushort x, ushort y, ushort z, Color color, int millisecs = 2000, byte A = 127) {
                 //if (np.craftingAreaBeingShown) { return; }
                 //np.craftingAreaBeingShown = true;

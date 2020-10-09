@@ -33,6 +33,7 @@ namespace NotAwesomeSurvival {
         [JsonIgnoreAttribute] public Level lvl;
         public ushort[,] heightmap;
         public List<BlockLocation> blocksThatMustBeDisturbed = new List<BlockLocation>();
+        public Dictionary<string, NasBlock.Entity> blockEntities = new Dictionary<string, NasBlock.Entity>();
         [JsonIgnoreAttribute] public SimplePriorityQueue<QueuedBlockUpdate, DateTime> tickQueue = new SimplePriorityQueue<QueuedBlockUpdate, DateTime>();
         [JsonIgnore] public SchedulerTask schedulerTask;
         

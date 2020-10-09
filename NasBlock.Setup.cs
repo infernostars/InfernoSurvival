@@ -343,6 +343,7 @@ namespace NotAwesomeSurvival {
             blocks[i].station.name = "Crafting Station";
             blocks[i].station.type = Crafting.Station.Type.Normal;
             blocks[i].station.ori = Crafting.Station.Orientation.NS;
+            blocks[i].existAction = CraftingExistAction();
             blocks[i].interaction = CraftingInteraction();
             i = 199;
             blocks[i] = new NasBlock(i, blocks[198]);
@@ -355,6 +356,7 @@ namespace NotAwesomeSurvival {
             blocks[i].station.name = "Smelting Station";
             blocks[i].station.type = Crafting.Station.Type.Furnace;
             blocks[i].station.ori = Crafting.Station.Orientation.WE;
+            blocks[i].existAction = CraftingExistAction();
             blocks[i].interaction = CraftingInteraction();
             i = 626;
             blocks[i] = new NasBlock(i, blocks[625]);

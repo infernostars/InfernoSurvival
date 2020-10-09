@@ -160,8 +160,9 @@ namespace NotAwesomeSurvival {
             }
         }
         static void OnJoinedLevel(Player p, Level prevLevel, Level level, ref bool announce) {
-            //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
+            NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
             //np.OnJoinedLevel(prevLevel, level);
+            np.nl = NasLevel.Get(level.name);
         }
         static void OnPlayerDisconnect(Player p, string reason) {
             NasPlayer np = (NasPlayer)p.Extras[PlayerKey];

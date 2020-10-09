@@ -31,6 +31,12 @@ namespace NotAwesomeSurvival {
         public static string GetFileName(string name) {
             return Path + name + Extension;
         }
+        public static NasLevel Get(string name) {
+            if (all.ContainsKey(name)) {
+                return all[name];
+            }
+            return null;
+        }
         public static void Unload(string name, NasLevel nl) {
             nl.EndTickTask();
             string jsonString;

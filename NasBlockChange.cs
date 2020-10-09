@@ -86,11 +86,13 @@ namespace NotAwesomeSurvival {
                          );
             }
             
-            NasLevel nl = NasLevel.all[np.p.level.name];
-            if (nl != null) {
-                //np.p.Message("Thing");
-                nl.SetBlock(x, y, z, Block.Air);
+            if (nasBlock.existAction != null) {
+                nasBlock.existAction(np, nasBlock, false, x, y, z);
+            }
+            if (np.nl != null) {
+                np.nl.SetBlock(x, y, z, Block.Air);
             } else {
+                np.p.Message("np's NasLevel is null, doing normal update");
                 np.p.level.UpdateBlock(np.p, x, y, z, Block.Air);
             }
 
@@ -131,8 +133,8 @@ namespace NotAwesomeSurvival {
                 CancelPlacedBlock(p, x, y, z);
                 return;
             }
-            if (nasBlock.interaction != null) {
-                nasBlock.interaction(np, MouseButton.Right, nasBlock, true, x, y, z);
+            if (nasBlock.existAction != null) {
+                nasBlock.existAction(np, nasBlock, true, x, y, z);
             }
             np.inventory.SetAmount(nasBlock.parentID, -nasBlock.resourceCost);
             

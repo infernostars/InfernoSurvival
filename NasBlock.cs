@@ -4,8 +4,12 @@ using MCGalaxy;
 using MCGalaxy.Maths;
 using BlockID = System.UInt16;
 using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>;
+
 using NasBlockInteraction =
     System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton,
+    NotAwesomeSurvival.NasBlock, ushort, ushort, ushort>;
+using NasBlockExistAction =
+    System.Action<NotAwesomeSurvival.NasPlayer,
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
 namespace NotAwesomeSurvival {
@@ -59,15 +63,17 @@ namespace NotAwesomeSurvival {
         public Func<BlockID, Drop> dropHandler;
         public int resourceCost;
         public Crafting.Station station;
+        public Container container;
         
         public bool collides = true;
         public AABB bounds;
         public float fallDamageMultiplier = -1;
         
-        public NasBlockAction disturbedAction = null;
         public float disturbDelayMax = 0f;
         public float disturbDelayMin = 0f;
+        public NasBlockAction disturbedAction = null;
         public NasBlockInteraction interaction = null;
+        public NasBlockExistAction existAction = null;
 
         public NasBlock(BlockID id, Material mat) {
             selfID = id;
@@ -99,16 +105,19 @@ namespace NotAwesomeSurvival {
             dropHandler = parent.dropHandler;
             resourceCost = parent.resourceCost;
             if (parent.station != null) {
-                station = new Crafting.Station();
-                station.name = parent.station.name;
-                station.type = parent.station.type;
-                station.ori = parent.station.ori;
+                station = new Crafting.Station(parent.station);
+            }
+            if (parent.container != null) {
+                container = new Container(parent.container);
             }
             if (parent.disturbedAction != null) {
                 this.disturbedAction = parent.disturbedAction;
             }
             if (parent.interaction != null) {
                 this.interaction = parent.interaction;
+            }
+            if (parent.existAction != null) {
+                this.existAction = parent.existAction;
             }
         }
     }
