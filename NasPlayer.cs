@@ -53,14 +53,14 @@ namespace NotAwesomeSurvival {
             this.p = p;
             inventory.SetPlayer(p);
         }
-        public void HandleInteraction(MouseButton button, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
+        public void HandleInteraction(MouseButton button, MouseAction action, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
             if (button == MouseButton.Right && p.RawHeldBlock != 0) { return; }
 
             BlockID serverBlockID = p.level.GetBlock(x, y, z);
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
             if (nasBlock.interaction != null) {
-                nasBlock.interaction(this, button, nasBlock, x, y, z);
+                nasBlock.interaction(this, button, action, nasBlock, x, y, z);
             }
         }
         public override void ChangeHealth(float diff) {

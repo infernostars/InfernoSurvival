@@ -8,7 +8,7 @@ using MCGalaxy.Events.PlayerEvents;
 using MCGalaxy.Maths;
 using BlockID = System.UInt16;
 using NasBlockInteraction =
-    System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton,
+    System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton, MCGalaxy.Events.PlayerEvents.MouseAction,
     NotAwesomeSurvival.NasBlock, ushort, ushort, ushort>;
 using NasBlockExistAction =
     System.Action<NotAwesomeSurvival.NasPlayer,
@@ -72,8 +72,8 @@ namespace NotAwesomeSurvival {
                             np.nl.blockEntities.Add(x+" "+y+" "+z, new Entity());
                             //np.p.Message("You placed a {0}!", nasBlock.container.name);
                             np.p.Message(nasBlock.container.description);
-                            np.p.Message("To insert, select what you want to store, then right click.");
-                            np.p.Message("To extract, left click while holding nothing.");
+                            np.p.Message("To insert, select what you want to store, then left click.");
+                            np.p.Message("To extract, right click.");
                             return;
                         }
                         
@@ -84,7 +84,8 @@ namespace NotAwesomeSurvival {
             }
             
             static NasBlockInteraction ContainerInteraction() {
-                return (np,button,nasBlock,x,y,z) => {
+                return (np,button,action,nasBlock,x,y,z) => {
+                    if (action == MouseAction.Pressed) { return; }
                     lock (Container.locker) {
                         if (np.nl.blockEntities.ContainsKey(x+" "+y+" "+z)) {
                             Entity blockEntity = np.nl.blockEntities[x+" "+y+" "+z];
@@ -102,22 +103,6 @@ namespace NotAwesomeSurvival {
                             
                             if (button == MouseButton.Left) {
                                 if (np.inventory.HeldItem.name == "Key") {
-                                    //it's locked, unlock it
-                                    if (blockEntity.lockedBy.Length > 0) {
-                                        blockEntity.lockedBy = "";
-                                        np.p.Message("You %funlock%S the {0}. Anyone can access it now.", nasBlock.container.name.ToLower());
-                                        return;
-                                    }
-                                }
-                                
-                                if (nasBlock.container.type == Container.Type.Chest) {
-                                    RemoveTool(np, blockEntity);
-                                    return;
-                                }
-                                return;
-                            }
-                            if (button == MouseButton.Right) {
-                                if (np.inventory.HeldItem.name == "Key") {
                                     //it's already unlocked, lock it
                                     if (blockEntity.lockedBy.Length == 0) {
                                         blockEntity.lockedBy = np.p.name;
@@ -128,6 +113,23 @@ namespace NotAwesomeSurvival {
                                 
                                 if (nasBlock.container.type == Container.Type.Chest) {
                                     AddTool(np, blockEntity);
+                                    return;
+                                }
+                                return;
+                            }
+                            
+                            if (button == MouseButton.Right) {
+                                if (np.inventory.HeldItem.name == "Key") {
+                                    //it's locked, unlock it
+                                    if (blockEntity.lockedBy.Length > 0) {
+                                        blockEntity.lockedBy = "";
+                                        np.p.Message("You %funlock%S the {0}. Anyone can access it now.", nasBlock.container.name.ToLower());
+                                        return;
+                                    }
+                                }
+                                
+                                if (nasBlock.container.type == Container.Type.Chest) {
+                                    RemoveTool(np, blockEntity);
                                     return;
                                 }
                                 return;
@@ -180,7 +182,8 @@ namespace NotAwesomeSurvival {
             }
             
             static NasBlockInteraction CraftingInteraction() {
-                return (np,button,nasBlock,x,y,z) => {
+                return (np,button,action,nasBlock,x,y,z) => {
+                    if (action == MouseAction.Pressed) { return; }
                     lock (Crafting.locker) {
                         Crafting.Recipe recipe = Crafting.GetRecipe(np.p, x, y, z, nasBlock.station);
                         if (recipe == null) {

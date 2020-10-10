@@ -77,9 +77,12 @@ namespace NotAwesomeSurvival {
             BlockID here = np.p.level.GetBlock(x, y, z);
             if (here != serverBlockID) { return; } //don't let them break it if the block changed since we've started
             
+            
+            //If there's a container and it's not empty or locked by someone else, it can't be broken
+            //COPY PASTED IN 2 PLACES
             if (nasBlock.container != null &&
                 np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
-                np.nl.blockEntities[x+" "+y+" "+z].contents != null
+                (np.nl.blockEntities[x+" "+y+" "+z].contents != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(np.p) )
                )
             {
                 return;
@@ -106,14 +109,14 @@ namespace NotAwesomeSurvival {
             }
             SetBreakID((byte)(GetBreakID() - 1));
         }
-        public static void CancelPlacedBlock(Player p, ushort x, ushort y, ushort z) {
-            p.cancelBlock = true;
+        public static void CancelPlacedBlock(Player p, ushort x, ushort y, ushort z, ref bool cancel) {
+            cancel = true;
             p.RevertBlock(x, y, z);
             Command.Find("tp").Use(p, "-precise ~ ~ ~");
         }
-        public static void PlaceBlock(Player p, ushort x, ushort y, ushort z, BlockID serverBlockID, bool placing) {
+        public static void PlaceBlock(Player p, ushort x, ushort y, ushort z, BlockID serverBlockID, bool placing, ref bool cancel) {
             if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
-            if (!placing) { p.Message("%cYou shouldn't be allowed to do this."); p.cancelBlock = true; return; }
+            if (!placing) { p.Message("%cYou shouldn't be allowed to do this."); cancel = true; return; }
 
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
@@ -121,32 +124,34 @@ namespace NotAwesomeSurvival {
 
             if (nasBlock.parentID == 0) {
                 p.Message("You can't place undefined blocks.");
-                CancelPlacedBlock(p, x, y, z);
+                CancelPlacedBlock(p, x, y, z, ref cancel);
                 return;
             }
 
             int amount = np.inventory.GetAmount(nasBlock.parentID);
             if (amount < 1) {
                 p.Message("%cYou don't have any {0}", nasBlock.GetName(p));
-                CancelPlacedBlock(p, x, y, z);
+                CancelPlacedBlock(p, x, y, z, ref cancel);
                 return;
             }
             if (amount < nasBlock.resourceCost) {
                 p.Message("%cYou need at least {0} {1} to place {2}",
                           nasBlock.resourceCost, nasBlock.GetName(p), nasBlock.GetName(p, clientBlockID));
-                CancelPlacedBlock(p, x, y, z);
+                CancelPlacedBlock(p, x, y, z, ref cancel);
                 return;
             }
             if (nasBlock.existAction != null) {
                 nasBlock.existAction(np, nasBlock, true, x, y, z);
             }
             np.inventory.SetAmount(nasBlock.parentID, -nasBlock.resourceCost);
-            
+        }
+        
+        public static void OnBlockChanged(Player p, ushort x, ushort y, ushort z, ChangeResult result) {
+            if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
+            NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
             NasLevel nl = NasLevel.all[np.p.level.name];
             if (nl != null) {
-
-                nl.SimulateSetBlock(x, y, z, serverBlockID);
-                //p.cancelBlock = true;
+                nl.SimulateSetBlock(x, y, z);
             }
         }
 
@@ -232,9 +237,11 @@ namespace NotAwesomeSurvival {
                     return;
                 }
                 
+                //If there's a container and it's not empty or locked by someone else, it can't be broken
+                //COPY PASTED IN 2 PLACES
                 if (nasBlock.container != null &&
                     np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
-                    np.nl.blockEntities[x+" "+y+" "+z].contents != null
+                    (np.nl.blockEntities[x+" "+y+" "+z].contents != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(p) )
                    )
                 {
                     np.ResetBreaking();

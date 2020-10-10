@@ -45,7 +45,8 @@ namespace NotAwesomeSurvival {
             OnPlayerConnectEvent.Register(OnPlayerConnect, Priority.High);
             OnJoinedLevelEvent.Register(OnJoinedLevel, Priority.High);
             OnPlayerClickEvent.Register(OnPlayerClick, Priority.High);
-            OnBlockChangeEvent.Register(OnBlockChange, Priority.High);
+            OnBlockChangingEvent.Register(OnBlockChanging, Priority.High);
+            OnBlockChangedEvent.Register(OnBlockChanged, Priority.High);
             OnPlayerMoveEvent.Register(OnPlayerMove, Priority.High);
             OnPlayerDisconnectEvent.Register(OnPlayerDisconnect, Priority.Low);
             OnPlayerCommandEvent.Register(OnPlayerCommand, Priority.High);
@@ -59,7 +60,8 @@ namespace NotAwesomeSurvival {
             OnPlayerConnectEvent.Unregister(OnPlayerConnect);
             OnJoinedLevelEvent.Unregister(OnJoinedLevel);
             OnPlayerClickEvent.Unregister(OnPlayerClick);
-            OnBlockChangeEvent.Unregister(OnBlockChange);
+            OnBlockChangingEvent.Unregister(OnBlockChanging);
+            OnBlockChangedEvent.Unregister(OnBlockChanged);
             OnPlayerMoveEvent.Unregister(OnPlayerMove);
             OnPlayerDisconnectEvent.Unregister(OnPlayerDisconnect);
             OnPlayerCommandEvent.Unregister(OnPlayerCommand);
@@ -190,15 +192,17 @@ namespace NotAwesomeSurvival {
                 //np.TakeDamage(0.5f);
             }
             if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
-            if (action == MouseAction.Pressed) {
-                NasPlayer np = NasPlayer.GetNasPlayer(p);
-                np.HandleInteraction(button, x, y, z, entity, face);
-            }
+            
+            NasPlayer np = NasPlayer.GetNasPlayer(p);
+            np.HandleInteraction(button, action, x, y, z, entity, face);
 
         }
 
-        static void OnBlockChange(Player p, ushort x, ushort y, ushort z, BlockID block, bool placing) {
-            NasBlockChange.PlaceBlock(p, x, y, z, block, placing);
+        static void OnBlockChanging(Player p, ushort x, ushort y, ushort z, BlockID block, bool placing, ref bool cancel) {
+            NasBlockChange.PlaceBlock(p, x, y, z, block, placing, ref cancel);
+        }
+        static void OnBlockChanged(Player p, ushort x, ushort y, ushort z, ChangeResult result) {
+            NasBlockChange.OnBlockChanged(p, x, y, z, result);
         }
         static void OnPlayerMove(Player p, Position next, byte yaw, byte pitch) {
             NasPlayer np = (NasPlayer)p.Extras[PlayerKey];

@@ -6,7 +6,7 @@ using BlockID = System.UInt16;
 using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>;
 
 using NasBlockInteraction =
-    System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton,
+    System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton, MCGalaxy.Events.PlayerEvents.MouseAction,
     NotAwesomeSurvival.NasBlock, ushort, ushort, ushort>;
 using NasBlockExistAction =
     System.Action<NotAwesomeSurvival.NasPlayer,

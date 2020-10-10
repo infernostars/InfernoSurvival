@@ -90,7 +90,7 @@ namespace NotAwesomeSurvival {
             DisturbBlocks(x, y, z, disturbDiagonals);
         }
         
-        public void SimulateSetBlock(int x, int y, int z, BlockID serverBlockID, bool disturbDiagonals = false) {
+        public void SimulateSetBlock(int x, int y, int z, bool disturbDiagonals = false) {
             if (
                 x >= lvl.Width ||
                 x < 0 ||
@@ -100,7 +100,6 @@ namespace NotAwesomeSurvival {
                 z < 0
                )
             { return; }
-            lvl.SetBlock((ushort)x, (ushort)y, (ushort)z, serverBlockID);
             DisturbBlocks(x, y, z, disturbDiagonals);
         }
         public void DisturbBlocks(int x, int y, int z, bool diagonals = false) {
