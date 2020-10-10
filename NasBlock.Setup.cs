@@ -236,6 +236,18 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
             i = 631; //Diamond
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 3);
+            
+            i = 148; //Old iron
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
+            i = 149; //Old iron slab
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
+            blocks[i] = new NasBlock(i, blocks[149]);
+            i = 294; //Old iron wall
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
+            blocks[i] = new NasBlock(i++, blocks[294]);
+            blocks[i] = new NasBlock(i++, blocks[294]);
+            blocks[i] = new NasBlock(i, blocks[294]);
+            
 
             i = 44; //Concrete slab-D
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] / 2, 1);
@@ -374,6 +386,18 @@ namespace NotAwesomeSurvival {
             i++;
             blocks[i] = new NasBlock(i, blocks[204]);
 
+            i = 216; //Chest-S
+            blocks[i] = new NasBlock(i, Material.Wood, DefaultDurabilities[(int)Material.Wood]*2);
+            blocks[i].container = new Container();
+            blocks[i].container.type = Container.Type.Chest;
+            blocks[i].existAction = ContainerExistAction();
+            blocks[i].interaction = ContainerInteraction();
+            i++;
+            blocks[i] = new NasBlock(i, blocks[216]);
+            i++;
+            blocks[i] = new NasBlock(i, blocks[216]);
+            i++;
+            blocks[i] = new NasBlock(i, blocks[216]);
 
             i = 627; //Coal ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 2, 1);

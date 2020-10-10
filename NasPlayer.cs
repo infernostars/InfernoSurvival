@@ -40,7 +40,7 @@ namespace NotAwesomeSurvival {
         [JsonIgnoreAttribute] public Color curFogColor = Color.White;
         [JsonIgnoreAttribute] public float targetRenderDistance = Server.Config.MaxFogDistance;
         [JsonIgnoreAttribute] public float curRenderDistance = Server.Config.MaxFogDistance;
-
+        
         public NasPlayer(Player p) {
             this.p = p;
             HP = 10;
@@ -54,7 +54,7 @@ namespace NotAwesomeSurvival {
             inventory.SetPlayer(p);
         }
         public void HandleInteraction(MouseButton button, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
-            if (!(p.RawHeldBlock == 0)) { return; }
+            if (button == MouseButton.Right && p.RawHeldBlock != 0) { return; }
 
             BlockID serverBlockID = p.level.GetBlock(x, y, z);
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);

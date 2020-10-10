@@ -182,13 +182,12 @@ namespace NotAwesomeSurvival {
             if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
 
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
-
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
-                //np.TakeDamage(0.5f);
+                //np.ChangeHealth(0.5f);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
-                NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
-                np.ChangeHealth(0.5f);
+                //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
+                //np.TakeDamage(0.5f);
             }
             if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
             if (action == MouseAction.Pressed) {

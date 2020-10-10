@@ -25,6 +25,11 @@ namespace NotAwesomeSurvival {
 
         //returns false if the player doesn't have room for the item
         public bool GetItem(Item item) {
+            if (items[selectedItemIndex] == null) {
+                items[selectedItemIndex] = item;
+                p.Message("You got {0}%S!", item.ColoredName);
+                return true;
+            }
             for (int i = 0; i < maxItems; i++) {
                 if (items[i] == null) {
                     items[i] = item;
@@ -32,7 +37,7 @@ namespace NotAwesomeSurvival {
                     return true;
                 }
             }
-            p.Message("You can't get {0}%S because your item bag is full.", item.ColoredName);
+            p.Message("You can't get {0}%S because your tool bag is full.", item.ColoredName);
             return false;
         }
         [NonSerialized()] public bool bagOpen = false;

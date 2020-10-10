@@ -8,6 +8,9 @@ namespace NotAwesomeSurvival {
             ItemProp fist = new ItemProp("Fist||¬", NasBlock.Material.None, 0, 0);
             fist.baseHP = Int32.MaxValue;
             Item.Fist = new Item("Fist");
+            
+            ItemProp key = new ItemProp("Key|6|σ", NasBlock.Material.None, 0, 0);
+            key.baseHP = Int32.MaxValue;
 
             ItemProp woodPick = new ItemProp("Wood Pickaxe|s|ß", NasBlock.Material.Stone, 0.0f, 1);
             woodPick.baseHP = 4;

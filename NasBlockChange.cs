@@ -73,8 +73,17 @@ namespace NotAwesomeSurvival {
         }
 
         static void BreakBlock(NasPlayer np, ushort x, ushort y, ushort z, BlockID serverBlockID, NasBlock nasBlock) {
+            if (np.nl == null) { return; }
             BlockID here = np.p.level.GetBlock(x, y, z);
             if (here != serverBlockID) { return; } //don't let them break it if the block changed since we've started
+            
+            if (nasBlock.container != null &&
+                np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
+                np.nl.blockEntities[x+" "+y+" "+z].contents != null
+               )
+            {
+                return;
+            }
             
             if (nasBlock.parentID != 0) {
                 Drop drop = nasBlock.dropHandler(nasBlock.parentID);
@@ -89,12 +98,7 @@ namespace NotAwesomeSurvival {
             if (nasBlock.existAction != null) {
                 nasBlock.existAction(np, nasBlock, false, x, y, z);
             }
-            if (np.nl != null) {
-                np.nl.SetBlock(x, y, z, Block.Air);
-            } else {
-                np.p.Message("np's NasLevel is null, doing normal update");
-                np.p.level.UpdateBlock(np.p, x, y, z, Block.Air);
-            }
+            np.nl.SetBlock(x, y, z, Block.Air);
 
             foreach (Player pl in np.p.level.players) {
                 NassEffect.Define(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], blockColors[nasBlock.parentID]);
@@ -223,6 +227,16 @@ namespace NotAwesomeSurvival {
                 NasBlock nasBlock = NasBlock.Get(clientBlockID);
                 if (nasBlock.durability == Int32.MaxValue) {
                     //p.Message("This block can't be broken");
+                    np.ResetBreaking();
+                    NassEffect.UndefineEffect(p, NasBlockChange.BreakMeterID);
+                    return;
+                }
+                
+                if (nasBlock.container != null &&
+                    np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
+                    np.nl.blockEntities[x+" "+y+" "+z].contents != null
+                   )
+                {
                     np.ResetBreaking();
                     NassEffect.UndefineEffect(p, NasBlockChange.BreakMeterID);
                     return;

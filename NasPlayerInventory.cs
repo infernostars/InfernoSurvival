@@ -35,7 +35,10 @@ namespace NotAwesomeSurvival {
             }
         }
 
-        public void GetDrop(Drop drop, bool showToNormalChat = false) {
+        /// <summary>
+        /// Returns a drop that contains the items the player was unable to pickup due to full inventory. If the drop is null, the player fit everything.
+        /// </summary>
+        public Drop GetDrop(Drop drop, bool showToNormalChat = false) {
             if (drop.blockStacks != null) {
                 for (int i = 0; i < drop.blockStacks.Count; i++) {
                     BlockStack bs = drop.blockStacks[i];
@@ -55,12 +58,20 @@ namespace NotAwesomeSurvival {
                     taskDisplayHeldBlock = Server.MainScheduler.QueueOnce(DisplayHeldBlockTask, info, TimeSpan.FromMilliseconds(i * 250));
                 }
             }
+            Drop leftovers = null;
             if (drop.items != null) {
                 foreach (Item item in drop.items) {
-                    GetItem(item);
+                    if (!GetItem(item)) {
+                        if (leftovers == null) {
+                            leftovers = new Drop(item);
+                        } else {
+                            leftovers.items.Add(item);
+                        }
+                    }
                 }
                 UpdateItemDisplay();
             }
+            return leftovers;
 
         }
 
