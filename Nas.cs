@@ -182,7 +182,8 @@ namespace NotAwesomeSurvival {
         byte entity, ushort x, ushort y, ushort z,
         TargetBlockFace face) {
             if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
-
+            
+            
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.ChangeHealth(0.5f);
@@ -194,7 +195,13 @@ namespace NotAwesomeSurvival {
             if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
             
             NasPlayer np = NasPlayer.GetNasPlayer(p);
-            np.HandleInteraction(button, action, x, y, z, entity, face);
+            if (!np.justBrokeOrPlaced) {
+                np.HandleInteraction(button, action, x, y, z, entity, face);
+            }
+            
+            if (action == MouseAction.Released) {
+                np.justBrokeOrPlaced = false;
+            }
 
         }
 

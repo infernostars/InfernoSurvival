@@ -108,6 +108,7 @@ namespace NotAwesomeSurvival {
                 NassEffect.Spawn(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], x, y, z, x, y, z);
             }
             SetBreakID((byte)(GetBreakID() - 1));
+            np.justBrokeOrPlaced = true;
         }
         public static void CancelPlacedBlock(Player p, ushort x, ushort y, ushort z, ref bool cancel) {
             cancel = true;
@@ -130,26 +131,28 @@ namespace NotAwesomeSurvival {
 
             int amount = np.inventory.GetAmount(nasBlock.parentID);
             if (amount < 1) {
-                p.Message("%cYou don't have any {0}", nasBlock.GetName(p));
+                p.Message("%cYou don't have any {0}.", nasBlock.GetName(p));
                 CancelPlacedBlock(p, x, y, z, ref cancel);
                 return;
             }
             if (amount < nasBlock.resourceCost) {
-                p.Message("%cYou need at least {0} {1} to place {2}",
+                p.Message("%cYou need at least {0} {1} to place {2}.",
                           nasBlock.resourceCost, nasBlock.GetName(p), nasBlock.GetName(p, clientBlockID));
                 CancelPlacedBlock(p, x, y, z, ref cancel);
                 return;
             }
-            if (nasBlock.existAction != null) {
-                nasBlock.existAction(np, nasBlock, true, x, y, z);
-            }
             np.inventory.SetAmount(nasBlock.parentID, -nasBlock.resourceCost);
+            np.justBrokeOrPlaced = true;
         }
         
         public static void OnBlockChanged(Player p, ushort x, ushort y, ushort z, ChangeResult result) {
             if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
             NasLevel nl = NasLevel.all[np.p.level.name];
+            NasBlock nasBlock = NasBlock.blocksIndexedByServerBlockID[p.level.GetBlock(x, y, z)];
+            if (nasBlock.existAction != null) {
+                nasBlock.existAction(np, nasBlock, true, x, y, z);
+            }
             if (nl != null) {
                 nl.SimulateSetBlock(x, y, z);
             }

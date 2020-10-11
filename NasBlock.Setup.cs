@@ -348,6 +348,7 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].damageDoneToTool = 0;
 
+            
             //Drawers
             i = 198;
             blocks[i] = new NasBlock(i, blocks[17]);
@@ -378,14 +379,28 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
 
             i = 204; //Monitor-S
-            blocks[i] = new NasBlock(i, Material.Metal, 3);
-            i++;
-            blocks[i] = new NasBlock(i, blocks[204]);
-            i++;
-            blocks[i] = new NasBlock(i, blocks[204]);
-            i++;
+            blocks[i] = new NasBlock(i++, Material.Metal, 3);
+            blocks[i] = new NasBlock(i++, blocks[204]);
+            blocks[i] = new NasBlock(i++, blocks[204]);
             blocks[i] = new NasBlock(i, blocks[204]);
 
+            
+            
+            i = 142; //Crate
+            blocks[i] = new NasBlock(i, Material.Wood, DefaultDurabilities[(int)Material.Wood]*2);
+            blocks[i].interaction = CrateInteraction();
+            
+            i = 143; //Barrel
+            blocks[i] = new NasBlock(i, Material.Wood, DefaultDurabilities[(int)Material.Wood]*2);
+            blocks[i].container = new Container();
+            blocks[i].container.type = Container.Type.Barrel;
+            blocks[i].existAction = ContainerExistAction();
+            blocks[i].interaction = ContainerInteraction();
+            i = 602; //Barrel (sideways)
+            blocks[i] = new NasBlock(i++, blocks[143]);
+            blocks[i] = new NasBlock(i, blocks[143]);
+            
+            
             i = 216; //Chest-S
             blocks[i] = new NasBlock(i, Material.Wood, DefaultDurabilities[(int)Material.Wood]*2);
             blocks[i].container = new Container();
@@ -398,6 +413,8 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, blocks[216]);
             i++;
             blocks[i] = new NasBlock(i, blocks[216]);
+            
+            
 
             i = 627; //Coal ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 2, 1);

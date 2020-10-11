@@ -76,7 +76,7 @@ namespace NotAwesomeSurvival {
             below.Y-= 2;
             float fallDamageMultiplier = 1;
             if (Collision.TouchesGround(p.level, bounds, below, out fallDamageMultiplier)) {
-
+                
                 float fallHeight = lastGroundedLocation.Y - next.Y;
                 if (fallHeight > 0) {
                     fallHeight /= 32f;

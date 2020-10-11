@@ -173,12 +173,25 @@ namespace NotAwesomeSurvival {
                 { 17, 17 }
             };
             
-            
+            //chest
             Recipe chest = new Recipe(216, 1);
             chest.pattern = new BlockID[,] {
                 {  5,  5,  5 },
                 {  5, 148, 5 },
                 {  5,  5,  5 }
+            };
+            
+            Recipe barrel = new Recipe(143, 1);
+            barrel.pattern = new BlockID[,] {
+                { 150 },
+                {  17 },
+                { 149 }
+            };
+            
+            Recipe crate = new Recipe(142, 1);
+            crate.pattern = new BlockID[,] {
+                { 5, 5 },
+                { 5, 5 }
             };
             
             

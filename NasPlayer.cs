@@ -20,6 +20,7 @@ namespace NotAwesomeSurvival {
         [NonSerialized()] public int breakAttempt = 0;
         [NonSerialized()] public DateTime? lastAirClickDate = null;
         [NonSerialized()] public DateTime lastLeftClickReleaseDate = DateTime.MinValue;
+        [JsonIgnoreAttribute] public bool justBrokeOrPlaced = false;
         [JsonIgnoreAttribute] public byte craftingAreaID = 0;
         public void ResetBreaking() {
             breakX = breakY = breakZ = ushort.MaxValue;
@@ -54,7 +55,30 @@ namespace NotAwesomeSurvival {
             inventory.SetPlayer(p);
         }
         public void HandleInteraction(MouseButton button, MouseAction action, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
-            if (button == MouseButton.Right && p.RawHeldBlock != 0) { return; }
+            if (button == MouseButton.Right && p.RawHeldBlock != 0) {
+                ushort xPlacing = x; ushort yPlacing = y; ushort zPlacing = z;
+    			if (face == TargetBlockFace.AwayX)    { xPlacing++; }
+    			if (face == TargetBlockFace.TowardsX) { xPlacing--; }
+    			if (face == TargetBlockFace.AwayY)    { yPlacing++; }
+    			if (face == TargetBlockFace.TowardsY) { yPlacing--; }
+    			if (face == TargetBlockFace.AwayZ)    { zPlacing++; }
+    			if (face == TargetBlockFace.TowardsZ) { zPlacing--; }
+    			if (p.level.GetBlock(xPlacing, yPlacing, zPlacing) == Block.Air) {
+    			    //p.Message("It's air");
+    			    AABB worldAABB = bounds.OffsetPosition(p.Pos);
+    			    //p.Message("worldAABB is {0}", worldAABB);
+    			    //checking as if its a fully sized block
+    			    AABB blockAABB = new AABB(0, 0, 0, 32, 32, 32);
+    			    blockAABB = blockAABB.Offset(xPlacing * 32, yPlacing * 32, zPlacing * 32);
+    			    //p.Message("blockAABB is {0}", blockAABB);
+    			    
+    			    if (!AABB.Intersects(ref worldAABB, ref blockAABB)) {
+    			        //p.Message("it dont intersects");
+    			        return;
+    			    }
+    			    //p.Message("it intersects");
+    			}
+            }
 
             BlockID serverBlockID = p.level.GetBlock(x, y, z);
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);

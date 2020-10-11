@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MCGalaxy;
 using MCGalaxy.Blocks;
 using MCGalaxy.Maths;
@@ -45,9 +46,6 @@ namespace NotAwesomeSurvival {
                         collides = false;
                         break;
                     default:
-                        //running down stairs will kill you at the bottom if their actual max Y is respected
-                        //make them taller so the server can know you're touching them
-                        bounds.Max.Y = 32;
                     	break;
                 }
             }
@@ -81,7 +79,27 @@ namespace NotAwesomeSurvival {
         
         
         
-        
+        public static List<NasBlock> TouchedBlocks(Level lvl, AABB entityAABB, Position entityPos) {
+            AABB worldAABB = entityAABB.OffsetPosition(entityPos);
+            Vec3S32 min = worldAABB.BlockMin, max = worldAABB.BlockMax;
+            //bool hitWalkthrough = false;
+            List<NasBlock> nbs = new List<NasBlock>();
+            for (int y = min.Y; y <= max.Y; y++)
+                for (int z = min.Z; z <= max.Z; z++)
+                    for (int x = min.X; x <= max.X; x++)
+            {
+                ushort xP = (ushort)x, yP = (ushort)y, zP = (ushort)z;
+                BlockID block = lvl.GetBlock(xP, yP, zP);
+                if (block == Block.Invalid) continue;
+                NasBlock nb = NasBlock.blocksIndexedByServerBlockID[block];
+                
+                AABB blockBB = nb.bounds.Offset(x * 32, y * 32, z * 32);
+                if (!AABB.Intersects(ref worldAABB, ref blockBB)) continue;
+                
+            }
+            return nbs;
+            
+        }
         
         
         
@@ -114,7 +132,11 @@ namespace NotAwesomeSurvival {
             if (!nasBlock.collides) { return false; }
             fallDamageMultiplier = nasBlock.fallDamageMultiplier;
             
-            AABB blockAABB = nasBlock.bounds.Offset(x * 32, y * 32, z * 32);
+            AABB blockAABB = nasBlock.bounds;
+            //running down stairs will kill you at the bottom if their actual max Y is respected
+            //make them taller so the server can know you're touching them
+            blockAABB.Max.Y = 32;
+            blockAABB = blockAABB.Offset(x * 32, y * 32, z * 32);
             if (AABB.Intersects(ref entityAABB, ref blockAABB)) {
                 //Player.Console.Message("nasblock ID is {0} and its fallDamageMultiplier is {1} and its max bound Y is {2}",
                 //                       nasBlock.selfID,

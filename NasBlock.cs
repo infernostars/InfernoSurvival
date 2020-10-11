@@ -26,6 +26,9 @@ namespace NotAwesomeSurvival {
                 NasBlock.Default :
                 NasBlock.blocks[clientBlockID];
         }
+        /// <summary>
+        /// Leave id arg blank to use parent's name
+        /// </summary>
         public string GetName(Player p, BlockID id = BlockID.MaxValue) {
             if (id == BlockID.MaxValue) { id = parentID; }
             return Block.GetName(p, Block.FromRaw(id)).Split('-')[0];

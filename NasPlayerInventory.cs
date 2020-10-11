@@ -75,7 +75,7 @@ namespace NotAwesomeSurvival {
 
         }
 
-        public void SetAmount(BlockID clientBlockID, int amount, bool displayChange = true) {
+        public void SetAmount(BlockID clientBlockID, int amount, bool displayChange = true, bool showToNormalChat = false) {
             //TODO threadsafe
 
             blocks[clientBlockID] += amount;
@@ -83,7 +83,7 @@ namespace NotAwesomeSurvival {
 
             if (displayChange) {
                 NasBlock nb = NasBlock.Get(clientBlockID);
-                DisplayHeldBlock(nb, amount);
+                DisplayHeldBlock(nb, amount, showToNormalChat);
             }
 
             if (blocks[clientBlockID] > 0) {
