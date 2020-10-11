@@ -356,6 +356,31 @@ namespace NotAwesomeSurvival {
                     
                 };
             }
+            
+            const float breadRestore = 0.5f;
+            static BlockID[] breadSet = new BlockID[] { Block.Extended|640, Block.Extended|641, Block.Extended|642 };
+            static NasBlockInteraction EatInteraction(BlockID[] set, int index, float healthRestored) {
+                return (np,button,action,nasBlock,x,y,z) => {
+                    if (action == MouseAction.Pressed) { return; }
+                    lock (Container.locker) {
+                        if (np.HP >= NasEntity.maxHP) {
+                            np.p.Message("You're already nice and full.");
+                            return;
+                        }
+                        float HPafterHeal = np.HP + healthRestored;
+                        if (HPafterHeal > NasEntity.maxHP) {
+                            healthRestored = NasEntity.maxHP - np.HP;
+                        }
+                        np.ChangeHealth(healthRestored);
+                        np.p.Message("*munch*");
+                        if (index == set.Length-1) {
+                            np.nl.SetBlock(x, y, z, Block.Air);
+                            return;
+                        }
+                        np.nl.SetBlock(x, y, z, set[index+1]);
+                    }
+                };
+            }
         
     }
 

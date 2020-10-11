@@ -424,6 +424,16 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 2);
             i = 630; //Diamond ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 3);
+            
+            i = 640; //Loaf of bread
+            blocks[i] = new NasBlock(i, Material.Organic, 3);
+            blocks[i].interaction = EatInteraction(breadSet, 0, breadRestore);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Organic, 3);
+            blocks[i].interaction = EatInteraction(breadSet, 1, breadRestore);
+            i++;
+            blocks[i] = new NasBlock(i, Material.Organic, 3);
+            blocks[i].interaction = EatInteraction(breadSet, 2, breadRestore);
 
         }
     } //class NasBlock
