@@ -6,6 +6,7 @@ using MCGalaxy;
 using MCGalaxy.Blocks;
 using MCGalaxy.Events.PlayerEvents;
 using MCGalaxy.Maths;
+using MCGalaxy.Tasks;
 using BlockID = System.UInt16;
 using NasBlockInteraction =
     System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton, MCGalaxy.Events.PlayerEvents.MouseAction,
@@ -359,19 +360,28 @@ namespace NotAwesomeSurvival {
             
             const float breadRestore = 0.5f;
             static BlockID[] breadSet = new BlockID[] { Block.Extended|640, Block.Extended|641, Block.Extended|642 };
-            static NasBlockInteraction EatInteraction(BlockID[] set, int index, float healthRestored) {
+            static NasBlockInteraction EatInteraction(BlockID[] set, int index, float healthRestored, float chewSeconds = 2) {
                 return (np,button,action,nasBlock,x,y,z) => {
                     if (action == MouseAction.Pressed) { return; }
+                    
                     lock (Container.locker) {
-                        if (np.HP >= NasEntity.maxHP) {
-                            np.p.Message("You're already nice and full.");
+                        //if (np.HP >= NasEntity.maxHP) {
+                        //    np.p.Message("You're full!");
+                        //    return;
+                        //}
+                        
+                        if (np.isChewing) {
+                            //np.p.Message("You're still chewing.");
                             return;
                         }
-                        float HPafterHeal = np.HP + healthRestored;
-                        if (HPafterHeal > NasEntity.maxHP) {
-                            healthRestored = NasEntity.maxHP - np.HP;
-                        }
-                        np.ChangeHealth(healthRestored);
+                        np.isChewing = true;
+                        SchedulerTask taskChew;
+                        EatInfo eatInfo = new EatInfo();
+                        eatInfo.np = np;
+                        eatInfo.healthRestored = healthRestored;
+                        taskChew = Server.MainScheduler.QueueOnce(CanEatAgainCallback, eatInfo, TimeSpan.FromSeconds(chewSeconds));
+                        
+                        
                         np.p.Message("*munch*");
                         if (index == set.Length-1) {
                             np.nl.SetBlock(x, y, z, Block.Air);
@@ -380,6 +390,25 @@ namespace NotAwesomeSurvival {
                         np.nl.SetBlock(x, y, z, set[index+1]);
                     }
                 };
+            }
+            public class EatInfo {
+                public NasPlayer np;
+                public float healthRestored;
+            }
+            static void CanEatAgainCallback(SchedulerTask task) {
+                EatInfo eatInfo = (EatInfo)task.State;
+                NasPlayer np = eatInfo.np;
+                float healthRestored = eatInfo.healthRestored;
+                
+                float HPafterHeal = np.HP + healthRestored;
+                if (HPafterHeal > NasEntity.maxHP) {
+                    healthRestored = NasEntity.maxHP - np.HP;
+                }
+                np.ChangeHealth(healthRestored);
+                
+                np.isChewing = false;
+                np.p.Message("*gulp*");
+                np.p.Message("%a+{0} %f[{1}] HP ♥", healthRestored, np.HP);
             }
         
     }

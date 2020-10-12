@@ -66,12 +66,18 @@ namespace NotAwesomeSurvival {
         }
         public void Tick() {
             if (tickQueue.Count < 1) { return; }
+            int actions = 0;
             while (tickQueue.First.date < DateTime.UtcNow) {
+                if (actions > 64) {
+                    //Player.Console.Message("falling behind on ticks");
+                    break;
+                }
                 QueuedBlockUpdate qb = tickQueue.First;
                 if (NasBlock.blocksIndexedByServerBlockID[lvl.GetBlock((ushort)qb.x, (ushort)qb.y, (ushort)qb.z)].selfID == qb.nb.selfID) {
                     qb.nb.disturbedAction(this, qb.x, qb.y, qb.z);
                 }
                 tickQueue.Dequeue();
+                actions++;
                 if (tickQueue.Count < 1) { break; }
             }
         }

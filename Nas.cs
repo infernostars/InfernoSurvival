@@ -184,17 +184,28 @@ namespace NotAwesomeSurvival {
             if (p.level.Config.Deletable && p.level.Config.Buildable) { return; }
             
             
+
+            if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
+            
+            
+            
+            NasPlayer np = NasPlayer.GetNasPlayer(p);
+            
+            
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.ChangeHealth(0.5f);
+                int dist;
+                Player.Console.Message("Found {0} holes at distance {1}", NasBlock.HolesInRange(np.nl, x, y, z, 4, NasBlock.waterSet, out dist).Count, dist);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.TakeDamage(0.5f);
             }
-            if (button == MouseButton.Left) { NasBlockChange.HandleLeftClick(p, button, action, yaw, pitch, entity, x, y, z, face); }
             
-            NasPlayer np = NasPlayer.GetNasPlayer(p);
+            
+            
+            
             if (!np.justBrokeOrPlaced) {
                 np.HandleInteraction(button, action, x, y, z, entity, face);
             }

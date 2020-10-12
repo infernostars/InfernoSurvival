@@ -22,6 +22,8 @@ namespace NotAwesomeSurvival {
         [NonSerialized()] public DateTime lastLeftClickReleaseDate = DateTime.MinValue;
         [JsonIgnoreAttribute] public bool justBrokeOrPlaced = false;
         [JsonIgnoreAttribute] public byte craftingAreaID = 0;
+        [JsonIgnoreAttribute] public bool isChewing = false;
+        
         public void ResetBreaking() {
             breakX = breakY = breakZ = ushort.MaxValue;
             //NassEffect.UndefineEffect(p, NasBlockChange.BreakMeterID);

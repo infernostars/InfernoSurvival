@@ -427,7 +427,7 @@ namespace NotAwesomeSurvival {
             
             i = 640; //Loaf of bread
             blocks[i] = new NasBlock(i, Material.Organic, 3);
-            blocks[i].interaction = EatInteraction(breadSet, 0, breadRestore);
+            blocks[i].interaction = EatInteraction(breadSet, 0, breadRestore*2);
             i++;
             blocks[i] = new NasBlock(i, Material.Organic, 3);
             blocks[i].interaction = EatInteraction(breadSet, 1, breadRestore);

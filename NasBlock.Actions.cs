@@ -36,7 +36,7 @@ namespace NotAwesomeSurvival {
         /// <summary>
         /// First ID is the infinite-flood version of the liquid, second is the source, third is waterfall, the rest are heights from tallest to shortest
         /// </summary>
-        static BlockID[] waterSet = new BlockID[] { 8, 9, Block.Extended|639,
+        public static BlockID[] waterSet = new BlockID[] { 8, 9, Block.Extended|639,
             Block.Extended|632,
             Block.Extended|633,
             Block.Extended|634,
@@ -57,14 +57,15 @@ namespace NotAwesomeSurvival {
             }
             return -1;
         }
-        static bool CanReplaceBlockAt(NasLevel nl, int x, int y, int z, BlockID[] set, int spreadIndex) {
+        /// <summary>
+        /// returns -1 if not part of the set, spreadIndex+1 if air, otherwise the index into the set
+        /// </summary>
+        static int CanReplaceBlockAt(NasLevel nl, int x, int y, int z, BlockID[] set, int spreadIndex) {
             BlockID hereBlock = nl.GetBlock(x, y, z);
-            if (hereBlock == Block.Air) { return true; }
+            if (hereBlock == Block.Air) { return spreadIndex+1; }
             
             int hereIndex = IsPartOfSet(set, hereBlock);
-            if (hereIndex == -1) { return false; }
-            if (hereIndex <= spreadIndex) { return false; }
-            return true;
+            return hereIndex;
         }
         static bool CanLiquidLive(NasLevel nl, BlockID[] set, int index, int x, int y, int z) {
             BlockID neighbor = nl.GetBlock(x, y, z);
@@ -125,21 +126,205 @@ namespace NotAwesomeSurvival {
                 
                 int spreadIndex = (index < LiquidWaterfallIndex+1) ? LiquidWaterfallIndex+1 : index+1;
                 BlockID spreadBlock = set[spreadIndex];
-                if (CanReplaceBlockAt(nl, x+1, y, z, set, spreadIndex)) {
+                
+                bool posX;
+                bool negX;
+                bool posZ;
+                bool negZ;
+                CanFlowInDirection(nl, x, y, z, set, spreadIndex,
+                                   out posX,
+                                   out negX,
+                                   out posZ,
+                                   out negZ);
+                
+                if (posX) {
                     nl.SetBlock(x+1, y, z, spreadBlock);
                 }
-                if (CanReplaceBlockAt(nl, x-1, y, z, set, spreadIndex)) {
+                if (negX) {
                     nl.SetBlock(x-1, y, z, spreadBlock);
                 }
-                if (CanReplaceBlockAt(nl, x, y, z+1, set, spreadIndex)) {
+                if (posZ) {
                     nl.SetBlock(x, y, z+1, spreadBlock);
                 }
-                if (CanReplaceBlockAt(nl, x, y, z-1, set, spreadIndex)) {
+                if (negZ) {
                     nl.SetBlock(x, y, z-1, spreadBlock);
                 }
                 
                 
             };
+        }
+        /// <summary>
+        /// 
+        /// 
+        /// </summary>
+        static void CanFlowInDirection(NasLevel nl, int x, int y, int z,
+                                       BlockID[] set, int spreadIndex,
+                                       out bool xPos,
+                                       out bool xNeg,
+                                       out bool zPos,
+                                       out bool zNeg
+                                      ) {
+            xPos = true;
+            xNeg = true;
+            zPos = true;
+            zNeg = true;
+            
+            bool xBlockedPos = false;
+            bool xBlockedNeg = false;
+            bool zBlockedPos = false;
+            bool zBlockedNeg = false;
+            
+            
+            int originalHoleDistance;
+            List<Vec3S32> holes = HolesInRange(nl, x, y-1, z, 4, set, out originalHoleDistance);
+            if (holes.Count > 0) {
+                CloserToAHole(x, y, z,  1,  0, originalHoleDistance, holes, ref xPos);
+                CloserToAHole(x, y, z, -1,  0, originalHoleDistance, holes, ref xNeg);
+                CloserToAHole(x, y, z,  0,  1, originalHoleDistance, holes, ref zPos);
+                CloserToAHole(x, y, z,  0, -1, originalHoleDistance, holes, ref zNeg);
+            }
+            
+            int neighborIndex1 = CanReplaceBlockAt(nl, x+1, y, z, set, spreadIndex);
+            int neighborIndex2 = CanReplaceBlockAt(nl, x-1, y, z, set, spreadIndex);
+            int neighborIndex3 = CanReplaceBlockAt(nl, x, y, z+1, set, spreadIndex);
+            int neighborIndex4 = CanReplaceBlockAt(nl, x, y, z-1, set, spreadIndex);
+            
+            if (neighborIndex1 == -1) {
+                xBlockedPos = true;
+            }
+            if (neighborIndex2 == -1) {
+                xBlockedNeg = true;
+            }
+            if (neighborIndex3 == -1) {
+                zBlockedPos = true;
+            }
+            if (neighborIndex4 == -1) {
+                zBlockedNeg = true;
+            }
+            xPos = xPos && !xBlockedPos;
+            xNeg = xNeg && !xBlockedNeg;
+            zPos = zPos && !zBlockedPos;
+            zNeg = zNeg && !zBlockedNeg;
+            
+            if (!(xPos || xNeg || zPos || zNeg)) { //no water can be spread
+                //allow any to spread that were not blocked by solid blocks before
+                xPos = !xBlockedPos;
+                xNeg = !xBlockedNeg;
+                zPos = !zBlockedPos;
+                zNeg = !zBlockedNeg;
+                
+            }
+            //make it not spread if the neighbor is taller
+            xPos = xPos && neighborIndex1 > spreadIndex;
+            xNeg = xNeg && neighborIndex2 > spreadIndex;
+            zPos = zPos && neighborIndex3 > spreadIndex;
+            zNeg = zNeg && neighborIndex4 > spreadIndex;
+            
+            
+        }
+        static void CloserToAHole(int x, int y, int z, int xDiff, int zDiff, int originalHoleDistance, List<Vec3S32> holes, ref bool canFlowDir) {
+            x += xDiff;
+            z += zDiff;
+            foreach (var hole in holes) {
+                int dist = Math.Abs(x - hole.X) + Math.Abs(z - hole.Z);
+                if (dist < originalHoleDistance) {
+                    canFlowDir = true; return;
+                }
+            }
+            canFlowDir = false;
+        }
+        
+        //list of X, Z directions
+        static int[] deltas = new int[]
+        {   -1, -1,
+            -1,  1,
+             1,  1,
+             1, -1
+             
+        };
+        public static bool ValueOfArrayAt(ref bool[,] array, int xO, int zO, int x, int z, int totalDistance) {
+            int xI = x - xO;
+            int zI = z - zO;
+            xI += totalDistance;
+            zI += totalDistance;
+            //both dimensions are the same 
+            if (
+                xI >= array.GetLength(0) ||
+                zI >= array.GetLength(0) ||
+                xI <  0 ||
+                zI <  0
+               ) {
+                return false;
+            }
+            return array[xI,zI];
+        }
+        public static void SetValueOfArrayAt(ref bool[,] array, int xO, int zO, int x, int z, int totalDistance, bool value) {
+            int xI = x - xO;
+            int zI = z - zO;
+            xI += totalDistance;
+            zI += totalDistance;
+            
+            array[xI,zI] = value;
+        }
+        public static List<Vec3S32> HolesInRange(NasLevel nl, int x, int y, int z, int totalDistance, BlockID[] set, out int distance) {
+            List<Vec3S32> holes = new List<Vec3S32>();
+            bool[,] waterAtSpot = new bool[totalDistance*2+1,totalDistance*2+1];
+            waterAtSpot[totalDistance,totalDistance] = true;
+            int xO = x;
+            int zO = z;
+            
+            //TODO: waterAtSpot has to be filled in before this loop, using flood-fill technology
+            
+            //for each "layer" of the diamond
+            for (int curDistance = 1; curDistance <= totalDistance; curDistance++) {
+                int deltaIndex = 0;
+                x += 1;
+                //for each of the 4 sides of the diamond
+                for (int i = 0; i < 4; i++) {
+                    
+                    //go along the length of a side
+                    for (int _i = 0; _i < curDistance; _i++) {
+                      //Player.Console.Message("|");
+                      //Player.Console.Message("re {0} {1}", x, z);
+                      if (
+                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x+1, z, totalDistance) ||
+                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x-1, z, totalDistance) ||
+                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z+1, totalDistance) ||
+                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z-1, totalDistance)
+                         ) {
+                          BlockID above = nl.GetBlock(x, y+1, z);
+                          if (above == Block.Air || IsPartOfSet(set, above) != -1) {
+                              //Player.Console.Message("SETTING WATER AT {0} {1}", x, z);
+                              SetValueOfArrayAt(ref waterAtSpot, xO, zO, x, z, totalDistance, true);
+                          }
+                      }
+                      if (ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z, totalDistance)) {
+                          
+                          //only add a hole if water made it here
+                          
+                          //ORIGINAL CODE ------
+                          BlockID block = nl.GetBlock(x, y, z);
+                          if (block == Block.Air || IsPartOfSet(set, block) != -1) {
+                              //Player.Console.Message("added a hole at -------------------------- {0} {1}", x, z);
+                              holes.Add(new Vec3S32(x, y, z));
+                          }
+                          //ORIGINAL CODE ------
+                          
+                      }
+                        //increase the coords along the length of the side
+                        x+= deltas[deltaIndex];
+                        z+= deltas[deltaIndex+1];
+                    }
+                    deltaIndex += 2;
+                }
+                if (holes.Count > 0) {
+                    distance = curDistance;
+                    return holes;
+                }
+            }
+            distance = -1;
+            return holes;
+            
         }
         
         static NasBlockAction FallingBlockAction(BlockID serverBlockID) {
