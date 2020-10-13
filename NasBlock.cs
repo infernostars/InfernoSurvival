@@ -31,7 +31,20 @@ namespace NotAwesomeSurvival {
         /// </summary>
         public string GetName(Player p, BlockID id = BlockID.MaxValue) {
             if (id == BlockID.MaxValue) { id = parentID; }
-            return Block.GetName(p, Block.FromRaw(id)).Split('-')[0];
+            return GetBlockName(p, Block.FromRaw(id)).Split('-')[0];
+        }
+        public static string GetBlockName(Player p, BlockID block) {
+            if (Block.IsPhysicsType(block)) return "Physics block";
+            
+            BlockDefinition def = null;
+            if (!p.IsSuper) {
+                def = p.level.GetBlockDef(block);
+            } else {
+                def = BlockDefinition.GlobalDefs[block];
+            }
+            if (def != null) { return def.Name; }
+            
+            return "Unknown";
         }
 
         static Drop DefaultDropHandler(BlockID id) {

@@ -25,6 +25,7 @@ namespace NotAwesomeSurvival {
             ItemProp ironPick = new ItemProp("Iron Pickaxe|f|ß", NasBlock.Material.Stone, 0.85f, 2);
             ItemProp ironShovel = new ItemProp("Iron Shovel|f|Γ", NasBlock.Material.Earth, 0.60f, 2);
             ItemProp ironAxe = new ItemProp("Iron Axe|f|π", NasBlock.Material.Wood, 0.75f, 2);
+            ironAxe.materialsEffectiveAgainst.Add(NasBlock.Material.Leaves);
             ItemProp ironSword = new ItemProp("Iron Sword|f|α", NasBlock.Material.Leaves, 0.75f, 2);
             ironSword.damage = 3.4f;
             ironPick.baseHP = ironBaseHP;
@@ -36,6 +37,7 @@ namespace NotAwesomeSurvival {
             ItemProp goldPick = new ItemProp("Gold Pickaxe|6|ß", NasBlock.Material.Stone, 0.90f, 3);
             ItemProp goldShovel = new ItemProp("Gold Shovel|6|Γ", NasBlock.Material.Earth, 0.85f, 3);
             ItemProp goldAxe = new ItemProp("Gold Axe|6|π", NasBlock.Material.Wood, 0.90f, 3);
+            goldAxe.materialsEffectiveAgainst.Add(NasBlock.Material.Leaves);
             ItemProp goldSword = new ItemProp("Gold Sword|6|α", NasBlock.Material.Leaves, 0.85f, 3);
             goldSword.damage = 5f;
             goldPick.baseHP = goldBaseHP;
@@ -47,6 +49,7 @@ namespace NotAwesomeSurvival {
             ItemProp diamondPick = new ItemProp("Diamond Pickaxe|b|ß", NasBlock.Material.Stone, 0.95f, 3);
             ItemProp diamondShovel = new ItemProp("Diamond Shovel|b|Γ", NasBlock.Material.Earth, 1f, 3);
             ItemProp diamondAxe = new ItemProp("Diamond Axe|b|π", NasBlock.Material.Wood, 0.95f, 3);
+            diamondAxe.materialsEffectiveAgainst.Add(NasBlock.Material.Leaves);
             ItemProp diamondSword = new ItemProp("Diamond Sword|b|α", NasBlock.Material.Leaves, 1f, 3);
             diamondSword.damage = 10f;
             diamondPick.baseHP = diamondBaseHP;

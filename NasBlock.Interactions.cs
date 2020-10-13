@@ -358,7 +358,6 @@ namespace NotAwesomeSurvival {
                 };
             }
             
-            const float breadRestore = 0.5f;
             static BlockID[] breadSet = new BlockID[] { Block.Extended|640, Block.Extended|641, Block.Extended|642 };
             static NasBlockInteraction EatInteraction(BlockID[] set, int index, float healthRestored, float chewSeconds = 2) {
                 return (np,button,action,nasBlock,x,y,z) => {

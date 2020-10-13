@@ -78,8 +78,8 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 9);
             i = 639; //waterfall
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
-            blocks[i].disturbDelayMin = 0.1f;
-            blocks[i].disturbDelayMax = 0.1f;
+            blocks[i].disturbDelayMin = 0.2f;
+            blocks[i].disturbDelayMax = 0.2f;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
             
             
@@ -206,9 +206,14 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbDelayMax = 0.2f;
             blocks[i].disturbedAction = FallingBlockAction(Block.Gravel);
 
+            const float leafShrivelDelayMin = 0.5f;
+            const float leafShrivelDelayMax = 1f;
             i = 18; //Leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].damageDoneToTool = 0;
+            blocks[i].disturbedAction = LeafBlockAction(logSet, Block.Leaves);
+            blocks[i].disturbDelayMin = leafShrivelDelayMin;
+            blocks[i].disturbDelayMax = leafShrivelDelayMax;
             blocks[i].dropHandler = (dropID) => {
                 Drop leafDrop = new Drop(18, 1);
                 Drop saplingDrop = new Drop(6, 1);
@@ -224,11 +229,18 @@ namespace NotAwesomeSurvival {
 
             i = 37; //Dandelion
             blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = GenericPlantAction();
 
             i = 38; //Rose
             blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = GenericPlantAction();
+            i = 39; //Dead shrub
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = NeedsSupportAction();
+            
             i = 40; //Tall grass
             blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = GenericPlantAction();
 
             i = 41; //Gold
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 2);
@@ -425,6 +437,8 @@ namespace NotAwesomeSurvival {
             i = 630; //Diamond ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 3);
             
+            
+            const float breadRestore = 1f;
             i = 640; //Loaf of bread
             blocks[i] = new NasBlock(i, Material.Organic, 3);
             blocks[i].interaction = EatInteraction(breadSet, 0, breadRestore*2);

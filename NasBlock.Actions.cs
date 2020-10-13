@@ -11,23 +11,34 @@ namespace NotAwesomeSurvival {
     public partial class NasBlock {
         static NasBlockAction FloodAction(BlockID serverBlockID) {
             return (nl,x,y,z) => {
-                if (nl.GetBlock(x, y-1, z) == Block.Air) {
+                if (CanPhysicsKillThis(nl.GetBlock(x, y-1, z)) ) {
                     nl.SetBlock(x, y-1, z, serverBlockID);
                     return;
                 }
-                if (nl.GetBlock(x+1, y, z) == Block.Air) {
+                if (CanPhysicsKillThis(nl.GetBlock(x+1, y, z)) ) {
                     nl.SetBlock(x+1, y, z, serverBlockID);
                 }
-                if (nl.GetBlock(x-1, y, z) == Block.Air) {
+                if (CanPhysicsKillThis(nl.GetBlock(x-1, y, z)) ) {
                     nl.SetBlock(x-1, y, z, serverBlockID);
                 }
-                if (nl.GetBlock(x, y, z+1) == Block.Air) {
+                if (CanPhysicsKillThis(nl.GetBlock(x, y, z+1)) ) {
                     nl.SetBlock(x, y, z+1, serverBlockID);
                 }
-                if (nl.GetBlock(x, y, z-1) == Block.Air) {
+                if (CanPhysicsKillThis(nl.GetBlock(x, y, z-1)) ) {
                     nl.SetBlock(x, y, z-1, serverBlockID);
                 }
             };
+        }
+        
+        public static BlockID[] blocksPhysicsCanKill = new BlockID[] {
+            0,
+            40
+        };
+        public static bool CanPhysicsKillThis(BlockID block) {
+            for (int i = 0; i < blocksPhysicsCanKill.Length; i++) {
+                if (block == blocksPhysicsCanKill[i]) { return true; }
+            }
+            return false;
         }
         
         static int LiquidInfiniteIndex = 0;
@@ -58,11 +69,11 @@ namespace NotAwesomeSurvival {
             return -1;
         }
         /// <summary>
-        /// returns -1 if not part of the set, spreadIndex+1 if air, otherwise the index into the set
+        /// returns -1 if not part of the set, spreadIndex+1 if air(or block liquids kill), otherwise the index into the set
         /// </summary>
         static int CanReplaceBlockAt(NasLevel nl, int x, int y, int z, BlockID[] set, int spreadIndex) {
             BlockID hereBlock = nl.GetBlock(x, y, z);
-            if (hereBlock == Block.Air) { return spreadIndex+1; }
+            if (CanPhysicsKillThis(hereBlock)) { return spreadIndex+1; }
             
             int hereIndex = IsPartOfSet(set, hereBlock);
             return hereIndex;
@@ -110,9 +121,9 @@ namespace NotAwesomeSurvival {
                 
                 BlockID below = nl.GetBlock(x, y-1, z);
                 int belowIndex = IsPartOfSet(set, below);
-                if (below == Block.Air || belowIndex != -1) {
+                if (CanPhysicsKillThis(below) || belowIndex != -1) {
                     //don't override infinite source, source, or waterfall with a waterfall
-                    if (below != Block.Air && belowIndex <= LiquidWaterfallIndex) { return; }
+                    if (!CanPhysicsKillThis(below) && belowIndex <= LiquidWaterfallIndex) { return; }
                     
                     //nl.lvl.Message("setting waterfall");
                     nl.SetBlock(x, y-1, z, set[LiquidWaterfallIndex]);
@@ -286,12 +297,12 @@ namespace NotAwesomeSurvival {
                 
                 BlockID here = nl.GetBlock(x, y, z);
                 //can't flood into this spot? quit
-                if (!(here == Block.Air || IsPartOfSet(liquidSet, here) != -1) ) {
+                if (!(CanPhysicsKillThis(here) || IsPartOfSet(liquidSet, here) != -1) ) {
                     return;
                 }
                 BlockID below = nl.GetBlock(x, y-1, z);
                 //if there's a hole here
-                if (below == Block.Air || IsPartOfSet(liquidSet, below) != -1) {
+                if (CanPhysicsKillThis(below) || IsPartOfSet(liquidSet, below) != -1) {
                     if (distanceFromCenter < distanceHolesWereFoundAt) {
                         holes.Clear();
                         holes.Add(new Vec3S32(x, y-1, z));
@@ -339,7 +350,7 @@ namespace NotAwesomeSurvival {
         static NasBlockAction FallingBlockAction(BlockID serverBlockID) {
             return (nl,x,y,z) => {
                 BlockID blockUnder = nl.GetBlock(x, y-1, z);
-                if (blockUnder == Block.Air || IsPartOfSet(waterSet, blockUnder) != -1) {
+                if (CanPhysicsKillThis(blockUnder) || IsPartOfSet(waterSet, blockUnder) != -1) {
                     nl.SetBlock(x, y, z, Block.Air);
                     nl.SetBlock(x, y-1, z, serverBlockID);
                 }
@@ -375,6 +386,76 @@ namespace NotAwesomeSurvival {
                 }
             };
         }
+        
+        
+        static BlockID[] logSet = new BlockID[] { 15, 16, 17, Block.Extended|144 };
+        static NasBlockAction LeafBlockAction(BlockID[] logSet, BlockID leaf) {
+            return (nl,x,y,z) => {
+                bool canLive = false;
+                int iteration = 1;
+                IsThereLog(nl, x+1, y,   z,   leaf, iteration, ref canLive);
+                IsThereLog(nl, x,   y+1, z,   leaf, iteration, ref canLive);
+                IsThereLog(nl, x,   y,   z+1, leaf, iteration, ref canLive);
+                IsThereLog(nl, x-1, y,   z,   leaf, iteration, ref canLive);
+                IsThereLog(nl, x,   y-1, z,   leaf, iteration, ref canLive);
+                IsThereLog(nl, x,   y,   z-1, leaf, iteration, ref canLive);
+                if (canLive) {
+                    //Player.Console.Message("It can live!");
+                    return;
+                }
+                nl.SetBlock(x, y, z, Block.Air);
+            };
+        }
+        static void IsThereLog(NasLevel nl, int x, int y, int z, BlockID leaf, int iteration, ref bool canLive) {
+            if (canLive) { return; }
+            BlockID hereBlock = nl.GetBlock(x, y, z);
+            if (IsPartOfSet(logSet, hereBlock) != -1) {
+                canLive = true;
+                return;
+            }
+            if (hereBlock != leaf) { return; }
+            if (iteration >= 5) { return; }
+            iteration++;
+            IsThereLog(nl, x+1, y,   z,   leaf, iteration, ref canLive);
+            IsThereLog(nl, x,   y+1, z,   leaf, iteration, ref canLive);
+            IsThereLog(nl, x,   y,   z+1, leaf, iteration, ref canLive);
+            IsThereLog(nl, x-1, y,   z,   leaf, iteration, ref canLive);
+            IsThereLog(nl, x,   y-1, z,   leaf, iteration, ref canLive);
+            IsThereLog(nl, x,   y,   z-1, leaf, iteration, ref canLive);
+        }
+        
+        static BlockID[] soilForPlants = new BlockID[] { Block.Dirt, Block.Extended|144 };
+        static bool CanPlantsLiveOn(BlockID block) {
+            
+            if (IsPartOfSet(soilForPlants, block) != -1 || IsPartOfSet(grassSet, block) != -1) {
+                return true;
+            }
+            return false;
+        }
+        
+        static NasBlockAction GenericPlantAction() {
+            return (nl,x,y,z) => {
+                BlockID below = nl.GetBlock(x, y-1, z);
+                if (CanPhysicsKillThis(below)) {
+                    nl.SetBlock(x, y, z, Block.Air);
+                    return;
+                }
+                if (!CanPlantsLiveOn(nl.GetBlock(x, y-1, z))) {
+                    nl.SetBlock(x, y, z, 39);
+                }
+            };
+        }
+        
+        static NasBlockAction NeedsSupportAction() {
+            return (nl,x,y,z) => {
+                BlockID below = nl.GetBlock(x, y-1, z);
+                if (CanPhysicsKillThis(below)) {
+                    nl.SetBlock(x, y, z, Block.Air);
+                }
+            };
+        }
+        
+        
     }
 
 }
