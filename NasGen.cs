@@ -336,7 +336,7 @@ namespace NotAwesomeSurvival {
             Tree GetTree() {
                 Tree tree;
                 tree = new OakTree();
-                tree.SetData(r, r.Next(0, 2));
+                tree.SetData(r, r.Next(0, 11));
                 return tree;
             }
             BlockID GetSoilType(int x, int z) {

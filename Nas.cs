@@ -196,7 +196,7 @@ namespace NotAwesomeSurvival {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.ChangeHealth(0.5f);
                 int dist;
-                Player.Console.Message("Found {0} holes at distance {1}", NasBlock.HolesInRange(np.nl, x, y, z, 4, NasBlock.waterSet, out dist).Count, dist);
+                Player.Console.Message("Found {0} holes at distance {1}", NasBlock.HolesInRange(np.nl, x, y+1, z, 4, NasBlock.waterSet, out dist).Count, dist);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];

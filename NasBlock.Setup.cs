@@ -78,8 +78,8 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 9);
             i = 639; //waterfall
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
-            blocks[i].disturbDelayMin = waterDisturbDelayMin;
-            blocks[i].disturbDelayMax = waterDisturbDelayMax;
+            blocks[i].disturbDelayMin = 0.1f;
+            blocks[i].disturbDelayMax = 0.1f;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
             
             

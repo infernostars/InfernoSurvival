@@ -176,7 +176,7 @@ namespace NotAwesomeSurvival {
             
             
             int originalHoleDistance;
-            List<Vec3S32> holes = HolesInRange(nl, x, y-1, z, 4, set, out originalHoleDistance);
+            List<Vec3S32> holes = HolesInRange(nl, x, y, z, 4, set, out originalHoleDistance);
             if (holes.Count > 0) {
                 CloserToAHole(x, y, z,  1,  0, originalHoleDistance, holes, ref xPos);
                 CloserToAHole(x, y, z, -1,  0, originalHoleDistance, holes, ref xNeg);
@@ -234,97 +234,106 @@ namespace NotAwesomeSurvival {
             canFlowDir = false;
         }
         
-        //list of X, Z directions
-        static int[] deltas = new int[]
-        {   -1, -1,
-            -1,  1,
-             1,  1,
-             1, -1
-             
-        };
-        public static bool ValueOfArrayAt(ref bool[,] array, int xO, int zO, int x, int z, int totalDistance) {
-            int xI = x - xO;
-            int zI = z - zO;
-            xI += totalDistance;
-            zI += totalDistance;
-            //both dimensions are the same 
-            if (
-                xI >= array.GetLength(0) ||
-                zI >= array.GetLength(0) ||
-                xI <  0 ||
-                zI <  0
-               ) {
-                return false;
-            }
-            return array[xI,zI];
-        }
-        public static void SetValueOfArrayAt(ref bool[,] array, int xO, int zO, int x, int z, int totalDistance, bool value) {
-            int xI = x - xO;
-            int zI = z - zO;
-            xI += totalDistance;
-            zI += totalDistance;
+        
+        public class FloodSim {
+            NasLevel nl;
+            int xO;
+            int yO;
+            int zO;
+            int totalDistance;
+            BlockID[] liquidSet;
+            bool[,] waterAtSpot;
+            int widthAndHeight;
             
-            array[xI,zI] = value;
+            List<Vec3S32> holes;
+            int distanceHolesWereFoundAt;
+            
+            
+            public FloodSim(NasLevel nl, int xO, int yO, int zO, int totalDistance, BlockID[] set) {
+                this.nl = nl;
+                this.xO = xO;
+                this.yO = yO;
+                this.zO = zO;
+                this.totalDistance = totalDistance;
+                this.liquidSet = set;
+                waterAtSpot = new bool[totalDistance*2+1,totalDistance*2+1];
+                widthAndHeight = waterAtSpot.GetLength(0);
+                
+                holes = new List<Vec3S32>();
+                distanceHolesWereFoundAt = totalDistance;
+            }
+            public List<Vec3S32> GetHoles(out int distance) {
+                //place water in the center
+                Flood(xO, zO, true);
+                TryFlood(xO+1, yO, zO);
+                TryFlood(xO-1, yO, zO);
+                TryFlood(xO,   yO, zO+1);
+                TryFlood(xO,   yO, zO-1);
+                
+                distance = distanceHolesWereFoundAt;
+                return holes;
+            }
+            void TryFlood(int x, int y, int z) {
+                int distanceFromCenter = Math.Abs(x - xO) + Math.Abs(z - zO);
+                //this spot is out of bounds? quit
+                if (distanceFromCenter > totalDistance) {
+                    return;
+                }
+                //this spot has been flooded already? quit
+                if (AlreadyFlooded(x, z)) {
+                    return;
+                }
+                
+                BlockID here = nl.GetBlock(x, y, z);
+                //can't flood into this spot? quit
+                if (!(here == Block.Air || IsPartOfSet(liquidSet, here) != -1) ) {
+                    return;
+                }
+                BlockID below = nl.GetBlock(x, y-1, z);
+                //if there's a hole here
+                if (below == Block.Air || IsPartOfSet(liquidSet, below) != -1) {
+                    if (distanceFromCenter < distanceHolesWereFoundAt) {
+                        holes.Clear();
+                        holes.Add(new Vec3S32(x, y-1, z));
+                        distanceHolesWereFoundAt = distanceFromCenter;
+                    } else if (distanceFromCenter == distanceHolesWereFoundAt) {
+                        holes.Add(new Vec3S32(x, y-1, z));
+                    }
+                }
+                Flood(x, z, true);
+                TryFlood(x+1, y, z);
+                TryFlood(x-1, y, z);
+                TryFlood(x, y, z+1);
+                TryFlood(x, y, z-1);
+            }
+            bool AlreadyFlooded(int x, int z) {
+                int xI = x - xO;
+                int zI = z - zO;
+                xI += totalDistance;
+                zI += totalDistance;
+                //both dimensions are the same 
+                if (
+                    xI >= widthAndHeight ||
+                    zI >= widthAndHeight ||
+                    xI <  0 ||
+                    zI <  0
+                   ) {
+                    return false;
+                }
+                return waterAtSpot[xI,zI];
+            }
+            void Flood(int x, int z, bool value) {
+                int xI = x - xO;
+                int zI = z - zO;
+                xI += totalDistance;
+                zI += totalDistance;
+                
+                waterAtSpot[xI,zI] = value;
+            }
         }
         public static List<Vec3S32> HolesInRange(NasLevel nl, int x, int y, int z, int totalDistance, BlockID[] set, out int distance) {
-            List<Vec3S32> holes = new List<Vec3S32>();
-            bool[,] waterAtSpot = new bool[totalDistance*2+1,totalDistance*2+1];
-            waterAtSpot[totalDistance,totalDistance] = true;
-            int xO = x;
-            int zO = z;
-            
-            //TODO: waterAtSpot has to be filled in before this loop, using flood-fill technology
-            
-            //for each "layer" of the diamond
-            for (int curDistance = 1; curDistance <= totalDistance; curDistance++) {
-                int deltaIndex = 0;
-                x += 1;
-                //for each of the 4 sides of the diamond
-                for (int i = 0; i < 4; i++) {
-                    
-                    //go along the length of a side
-                    for (int _i = 0; _i < curDistance; _i++) {
-                      //Player.Console.Message("|");
-                      //Player.Console.Message("re {0} {1}", x, z);
-                      if (
-                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x+1, z, totalDistance) ||
-                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x-1, z, totalDistance) ||
-                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z+1, totalDistance) ||
-                          ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z-1, totalDistance)
-                         ) {
-                          BlockID above = nl.GetBlock(x, y+1, z);
-                          if (above == Block.Air || IsPartOfSet(set, above) != -1) {
-                              //Player.Console.Message("SETTING WATER AT {0} {1}", x, z);
-                              SetValueOfArrayAt(ref waterAtSpot, xO, zO, x, z, totalDistance, true);
-                          }
-                      }
-                      if (ValueOfArrayAt(ref waterAtSpot, xO, zO, x, z, totalDistance)) {
-                          
-                          //only add a hole if water made it here
-                          
-                          //ORIGINAL CODE ------
-                          BlockID block = nl.GetBlock(x, y, z);
-                          if (block == Block.Air || IsPartOfSet(set, block) != -1) {
-                              //Player.Console.Message("added a hole at -------------------------- {0} {1}", x, z);
-                              holes.Add(new Vec3S32(x, y, z));
-                          }
-                          //ORIGINAL CODE ------
-                          
-                      }
-                        //increase the coords along the length of the side
-                        x+= deltas[deltaIndex];
-                        z+= deltas[deltaIndex+1];
-                    }
-                    deltaIndex += 2;
-                }
-                if (holes.Count > 0) {
-                    distance = curDistance;
-                    return holes;
-                }
-            }
-            distance = -1;
-            return holes;
-            
+            FloodSim sim = new FloodSim(nl, x, y, z, totalDistance, set);
+            return sim.GetHoles(out distance);
         }
         
         static NasBlockAction FallingBlockAction(BlockID serverBlockID) {
