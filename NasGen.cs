@@ -124,20 +124,23 @@ namespace NotAwesomeSurvival {
             void CalcTemps() {
                 p.Message("Calculating temperatures");
                 temps = new float[lvl.Width, lvl.Length];
-                for (double z = 0; z < lvl.Length; ++z)
+                for (double z = 0; z < lvl.Length; ++z) {
                     for (double x = 0; x < lvl.Width; ++x) {
                         //divide by less for smaller scale
-                        double xVal = (x + offsetX) / 300, zVal = (z + offsetZ) / 300;
+                        double xVal = (x + offsetX) / 150, zVal = (z + offsetZ) / 150;
                         const double adj = 1;
                         xVal += adj;
                         zVal += adj;
-                        temps[(int)x, (int)z] = (float)adjNoise.GetValue(xVal, 0, zVal);
+                        float val = (float)adjNoise.GetValue(xVal, 0, zVal)+0.5f;
+                        if (z == 0) { Player.Console.Message("temp is {0}", val); }
+                        temps[(int)x, (int)z] = val;
                     }
+                }
             }
             void GenTerrain() {
                 //more frequency = smaller map scale
                 adjNoise.Frequency = 0.75;
-                adjNoise.OctaveCount = 6;
+                adjNoise.OctaveCount = 5;
                 DateTime dateStartLayer;
                 int counter = 0;
                 double width = lvl.Width, height = lvl.Height, length = lvl.Length;
@@ -160,8 +163,16 @@ namespace NotAwesomeSurvival {
                                 continue;
                             }
                             
+                            
+                            double threshDiv = temps[(int)x,(int)z];
+                            if (threshDiv <= 0) { threshDiv = 0; }
+                            
                             //multiply by more to more strictly follow halfway under = solid, above = air
-                            double threshold = (((y + (oceanHeight - 16)) / (height)) - 0.5) * 4.5;
+                            double threshold =
+                                (((y + (64 - 16)) / (height)) - 0.5)
+                                * (4.5 + (25 * threshDiv)); //4.5f
+
+                            
                             if (threshold < -1.5) {
                                 lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Stone);
                                 continue;
@@ -169,7 +180,12 @@ namespace NotAwesomeSurvival {
                             if (threshold > 1.5) { continue; }
 
                             //divide y by less for more "layers"
-                            double xVal = (x + offsetX) / 200, yVal = y / 160, zVal = (z + offsetZ) / 200;
+                            
+                            double xVal = (x + offsetX) / 200, yVal = y / (250 + (250 * threshDiv)), zVal = (z + offsetZ) / 200;
+                            const double shrink = 3;
+                            xVal *= shrink;
+                            yVal *= shrink;
+                            zVal *= shrink;
                             const double adj = 1;
                             xVal += adj;
                             yVal += adj;
@@ -349,9 +365,9 @@ namespace NotAwesomeSurvival {
 
             
             BlockID GetSoilType(int x, int z) {
-                if (temps[x,z] > 0.5) {
-                    return Block.Sand;
-                }
+                //if (temps[x,z] > 0.5) {
+                //    return Block.Sand;
+                //}
                 return Block.Dirt;
             }
             
@@ -399,7 +415,7 @@ namespace NotAwesomeSurvival {
                                     if (lvl.GetBlock((ushort)x, (ushort)(y+1), (ushort)z) != Block.Stone) {
                                         continue;
                                     }
-                                    Player.Console.Message("Generating water source");
+                                    //Player.Console.Message("Generating water source");
                                     lvl.SetTile((ushort)x, (ushort)y, (ushort)z, 9);
                                     nl.blocksThatMustBeDisturbed.Add(new NasLevel.BlockLocation(x, y, z));
                                 }
