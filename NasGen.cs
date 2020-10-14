@@ -40,24 +40,33 @@ namespace NotAwesomeSurvival {
         public static void TakeDown() {
 
         }
+        /// <summary>
+        /// Returns true if seed and offsets were succesfully found
+        /// </summary>
+        public static bool GetSeedAndChunkOffset(string mapName, ref string seed, ref int chunkOffsetX, ref int chunkOffsetZ) {
+            string[] bits = mapName.Split('_');
+            if (bits.Length <= 1) { return false; }
+            
+            seed = bits[0];
+            string[] chunks = bits[1].Split(',');
+            if (chunks.Length <= 1) { return false; }
+            
+            if (!Int32.TryParse(chunks[0], out chunkOffsetX)) { return false; }
+            if (!Int32.TryParse(chunks[1], out chunkOffsetZ)) { return false; }
+            return true;
+        }
+        
         public static bool currentlyGenerating = false;
         static bool Gen(Player p, Level lvl, string seed) {
             currentlyGenerating = true;
             int offsetX = 0, offsetZ = 0;
-            string[] bits = lvl.name.Split(',');
-            if (bits.Length >= 2) {
-                int chunkOffsetX;
-                int chunkOffsetZ;
-                Int32.TryParse(bits[0], out chunkOffsetX);
-                Int32.TryParse(bits[1], out chunkOffsetZ);
-                offsetX = chunkOffsetX * mapDims;
-                offsetZ = chunkOffsetZ * mapDims;
-
-                offsetX -= chunkOffsetX;
-                offsetZ -= chunkOffsetZ;
-
-                //p.Message("offsetX is {0}, offsetZ is {1}", offsetX, offsetZ);
-            }
+            int chunkOffsetX = 0, chunkOffsetZ = 0;
+            GetSeedAndChunkOffset(lvl.name, ref seed, ref chunkOffsetX, ref chunkOffsetZ);
+            
+            offsetX = chunkOffsetX * mapDims;
+            offsetZ = chunkOffsetZ * mapDims;
+            offsetX -= chunkOffsetX;
+            offsetZ -= chunkOffsetZ;
 
             Perlin adjNoise = new Perlin();
             adjNoise.Seed = MapGen.MakeInt(seed);
@@ -107,8 +116,24 @@ namespace NotAwesomeSurvival {
                 GenCaves();
                 GenPlants();
                 GenOre();
+                GenWaterSources();
+                
+                NasLevel.Unload(lvl.name, nl);
             }
 
+            void CalcTemps() {
+                p.Message("Calculating temperatures");
+                temps = new float[lvl.Width, lvl.Length];
+                for (double z = 0; z < lvl.Length; ++z)
+                    for (double x = 0; x < lvl.Width; ++x) {
+                        //divide by less for smaller scale
+                        double xVal = (x + offsetX) / 300, zVal = (z + offsetZ) / 300;
+                        const double adj = 1;
+                        xVal += adj;
+                        zVal += adj;
+                        temps[(int)x, (int)z] = (float)adjNoise.GetValue(xVal, 0, zVal);
+                    }
+            }
             void GenTerrain() {
                 //more frequency = smaller map scale
                 adjNoise.Frequency = 0.75;
@@ -134,6 +159,8 @@ namespace NotAwesomeSurvival {
                                 lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Bedrock);
                                 continue;
                             }
+                            
+                            //multiply by more to more strictly follow halfway under = solid, above = air
                             double threshold = (((y + (oceanHeight - 16)) / (height)) - 0.5) * 4.5;
                             if (threshold < -1.5) {
                                 lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Stone);
@@ -153,7 +180,7 @@ namespace NotAwesomeSurvival {
                             //}
                             //counter++;
 
-                            //multiply by more to more strictly follow halfway under = solid, above = air
+                            
 
 
                             if (value > threshold) {
@@ -189,21 +216,7 @@ namespace NotAwesomeSurvival {
                         }
                     }
                 nl.lvl = lvl;
-                NasLevel.Unload(lvl.name, nl);
                 //NasLevel.all.Add(lvl.name, nl);
-            }
-            void CalcTemps() {
-                p.Message("Calculating temperatures");
-                temps = new float[lvl.Width, lvl.Length];
-                for (double z = 0; z < lvl.Length; ++z)
-                    for (double x = 0; x < lvl.Width; ++x) {
-                        //divide by less for smaller scale
-                        double xVal = (x + offsetX) / 300, zVal = (z + offsetZ) / 300;
-                        const double adj = 1;
-                        xVal += adj;
-                        zVal += adj;
-                        temps[(int)x, (int)z] = (float)adjNoise.GetValue(xVal, 0, zVal);
-                    }
             }
             void GenSoil() {
                 int width = lvl.Width, height = lvl.Height, length = lvl.Length;
@@ -307,7 +320,8 @@ namespace NotAwesomeSurvival {
                                 lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) == Block.Air) {
 
                                 if (r.Next(0, 50) == 0) {
-
+                                    if (!lvl.IsAirAt((ushort)x, (ushort)(y + 10), (ushort)z)) { continue; }
+                                    
                                     double xVal = ((double)x + offsetX) / 200, yVal = (double)y / 130, zVal = ((double)z + offsetZ) / 200;
                                     const double adj = 1;
                                     xVal += adj;
@@ -315,10 +329,13 @@ namespace NotAwesomeSurvival {
                                     zVal += adj;
                                     double value = adjNoise.GetValue(xVal, yVal, zVal);
                                     if (value > r.NextDouble()) {
-                                        GenTree((ushort)x, (ushort)y, (ushort)z);
+                                        GenTree((ushort)x, (ushort)(y+1), (ushort)z);
                                     } else if (r.Next(0, 20) == 0) {
-                                        GenTree((ushort)x, (ushort)y, (ushort)z);
+                                        GenTree((ushort)x, (ushort)(y+1), (ushort)z);
                                     }
+                                } else if (r.Next(0, 2) == 0) {
+                                    //tallgrass
+                                    lvl.SetBlock((ushort)x, (ushort)(y+1), (ushort)z, 40);
                                 }
 
                                 lvl.SetBlock((ushort)x, (ushort)(y), (ushort)z, topSoil);
@@ -327,18 +344,10 @@ namespace NotAwesomeSurvival {
             }
             void GenTree(ushort x, ushort y, ushort z) {
                 topSoil = Block.Dirt;
-                Tree tree = GetTree();
-                tree.Generate((ushort)x, (ushort)(y + 1), (ushort)z, (X, Y, Z, raw) => {
-                    if (lvl.IsAirAt(X, Y, Z) || lvl.GetBlock(X, Y, Z) == Block.Leaves) { lvl.SetTile(X, Y, Z, raw); }
-                });
+                NasTree.GenOakTree(nl, r, x, y, z);
             }
 
-            Tree GetTree() {
-                Tree tree;
-                tree = new OakTree();
-                tree.SetData(r, r.Next(0, 11));
-                return tree;
-            }
+            
             BlockID GetSoilType(int x, int z) {
                 if (temps[x,z] > 0.5) {
                     return Block.Sand;
@@ -377,6 +386,27 @@ namespace NotAwesomeSurvival {
                 return false;
             }
 
+            
+            
+            void GenWaterSources() {
+                for (int y = 0; y < (ushort)lvl.Height - 1; y++)
+                    for (int z = 0; z < lvl.Length; ++z)
+                        for (int x = 0; x < lvl.Width; ++x) {
+                            BlockID curBlock = lvl.FastGetBlock((ushort)x, (ushort)(y), (ushort)z);
+                            if (curBlock != Block.Stone) { continue; }
+                            if (r.NextDouble() < 0.0005) {
+                                if (BlockExposed(x, y, z)) {
+                                    if (lvl.GetBlock((ushort)x, (ushort)(y+1), (ushort)z) != Block.Stone) {
+                                        continue;
+                                    }
+                                    Player.Console.Message("Generating water source");
+                                    lvl.SetTile((ushort)x, (ushort)y, (ushort)z, 9);
+                                    nl.blocksThatMustBeDisturbed.Add(new NasLevel.BlockLocation(x, y, z));
+                                }
+                            }
+                        }
+            }
+            
             bool BlockExposed(int x, int y, int z) {
                 if (lvl.IsAirAt((ushort)(x + 1), (ushort)y, (ushort)z)) { return true; }
                 if (lvl.IsAirAt((ushort)(x - 1), (ushort)y, (ushort)z)) { return true; }

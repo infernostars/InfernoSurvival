@@ -22,6 +22,8 @@ namespace NotAwesomeSurvival {
         static void OnPlayerSpawning(Player p, ref Position pos, ref byte yaw, ref byte pitch, bool respawning) {
             //if (respawning) { return; }
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
+            np.nl = NasLevel.Get(p.level.name);
+            //p.Message("Your NasLevel is named {0}", np.nl == null ? "NULL" : np.nl.lvl.name);
             np.SpawnPlayer(p.level, ref pos, ref yaw, ref pitch);
         }
 
@@ -113,25 +115,21 @@ namespace NotAwesomeSurvival {
             }
             atBorder = false;
         }
-        void TryGoMapAt(int chunkOffsetX, int chunkOffsetZ) {
+        void TryGoMapAt(int dirX, int dirZ) {
             if (atBorder) {
                 //p.Message("Can't do it because already at border");
                 return;
             }
             atBorder = true;
-            int chunkX = 0, chunkZ = 0;
-            string[] bits = p.level.name.Split(',');
-            if (bits.Length >= 2) {
-                if (!Int32.TryParse(bits[0], out chunkX)) { return; }
-                if (!Int32.TryParse(bits[1], out chunkZ)) { return; }
-            } else {
-                return;
-            }
-            chunkX += chunkOffsetX;
-            chunkZ += chunkOffsetZ;
-            string mapName = chunkX + "," + chunkZ;
+            int chunkOffsetX = 0, chunkOffsetZ = 0;
+            string seed = "DEFAULT";
+            if (!NasGen.GetSeedAndChunkOffset(p.level.name, ref seed, ref chunkOffsetX, ref chunkOffsetZ)) { return; }
+            
+            chunkOffsetX += dirX;
+            chunkOffsetZ += dirZ;
+            string mapName = seed+"_"+chunkOffsetX + "," + chunkOffsetZ;
             if (File.Exists("levels/" + mapName + ".lvl")) {
-                transferInfo = new TransferInfo(p, chunkOffsetX, chunkOffsetZ);
+                transferInfo = new TransferInfo(p, dirX, dirZ);
                 Command.Find("goto").Use(p, mapName);
             } else {
                 if (NasGen.currentlyGenerating) {
@@ -141,6 +139,7 @@ namespace NotAwesomeSurvival {
                 GenInfo info = new GenInfo();
                 info.p = p;
                 info.mapName = mapName;
+                info.seed = seed;
                 SchedulerTask taskGenMap;
                 taskGenMap = NasGen.genScheduler.QueueOnce(GenTask, info, TimeSpan.Zero);
             }
@@ -148,10 +147,12 @@ namespace NotAwesomeSurvival {
         class GenInfo {
             public Player p;
             public string mapName;
+            public string seed;
         }
         static void GenTask(SchedulerTask task) {
             GenInfo info = (GenInfo)task.State;
-            Command.Find("newlvl").Use(info.p, info.mapName + " " + NasGen.mapDims + " " + NasGen.mapDims + " " + NasGen.mapDims + " nasgen " + NasGen.seed);
+            info.p.Message("Seed is {0}", info.seed);
+            Command.Find("newlvl").Use(info.p, info.mapName + " " + NasGen.mapDims + " " + NasGen.mapDims + " " + NasGen.mapDims + " nasgen " + info.seed);
         }
         [JsonIgnore] public TransferInfo transferInfo = null;
         public class TransferInfo {

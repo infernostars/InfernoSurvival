@@ -18,6 +18,7 @@ namespace NotAwesomeSurvival {
             ItemProp stonePick = new ItemProp("Stone Pickaxe|7|ß", NasBlock.Material.Stone, 0.75f, 1);
             ItemProp stoneShovel = new ItemProp("Stone Shovel|7|Γ", NasBlock.Material.Earth, 0.50f, 1);
             ItemProp stoneAxe = new ItemProp("Stone Axe|7|π", NasBlock.Material.Wood, 0.60f, 1);
+            stoneAxe.materialsEffectiveAgainst.Add(NasBlock.Material.Leaves);
             ItemProp stoneSword = new ItemProp("Stone Sword|7|α", NasBlock.Material.Leaves, 0.50f, 1);
             stoneSword.damage = 2.5f;
 

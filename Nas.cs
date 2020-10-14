@@ -43,7 +43,6 @@ namespace NotAwesomeSurvival {
             Collision.Setup();
 
             OnPlayerConnectEvent.Register(OnPlayerConnect, Priority.High);
-            OnJoinedLevelEvent.Register(OnJoinedLevel, Priority.High);
             OnPlayerClickEvent.Register(OnPlayerClick, Priority.High);
             OnBlockChangingEvent.Register(OnBlockChanging, Priority.High);
             OnBlockChangedEvent.Register(OnBlockChanged, Priority.High);
@@ -58,7 +57,6 @@ namespace NotAwesomeSurvival {
             NasPlayer.TakeDown();
             DynamicColor.TakeDown();
             OnPlayerConnectEvent.Unregister(OnPlayerConnect);
-            OnJoinedLevelEvent.Unregister(OnJoinedLevel);
             OnPlayerClickEvent.Unregister(OnPlayerClick);
             OnBlockChangingEvent.Unregister(OnBlockChanging);
             OnBlockChangedEvent.Unregister(OnBlockChanged);
@@ -124,6 +122,19 @@ namespace NotAwesomeSurvival {
             //    p.cancelcommand = true;
             //    return;
             //}
+            
+            if (cmd.CaselessEq("deleteall")) {
+                if (message.Length == 0) { return; }
+                string[] allMaps = LevelInfo.AllMapNames();
+                Command deleteLvl = Command.Find("deletelvl");
+                foreach (string mapName in allMaps) {
+                    if (mapName.StartsWith(message)) {
+                        deleteLvl.Use(p, mapName);
+                    }
+                }
+                p.cancelcommand = true;
+                return;
+            }
 
 
             if (!cmd.CaselessEq("nas")) { return; }
@@ -161,11 +172,6 @@ namespace NotAwesomeSurvival {
                 return;
             }
         }
-        static void OnJoinedLevel(Player p, Level prevLevel, Level level, ref bool announce) {
-            NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
-            //np.OnJoinedLevel(prevLevel, level);
-            np.nl = NasLevel.Get(level.name);
-        }
         static void OnPlayerDisconnect(Player p, string reason) {
             NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
             NasPlayer.SetLocation(np, p.level.name, p.Pos, p.Rot);
@@ -195,8 +201,6 @@ namespace NotAwesomeSurvival {
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.ChangeHealth(0.5f);
-                int dist;
-                Player.Console.Message("Found {0} holes at distance {1}", NasBlock.HolesInRange(np.nl, x, y+1, z, 4, NasBlock.waterSet, out dist).Count, dist);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
                 //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];

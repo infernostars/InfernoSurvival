@@ -18,9 +18,12 @@ namespace NotAwesomeSurvival {
         static Random r = new Random();
         public class BlockLocation {
             public int X, Y, Z;
-            //public BlockLocation() { }
+            public BlockLocation() { }
             public BlockLocation(QueuedBlockUpdate qb) {
                 X = qb.x; Y = qb.y; Z = qb.z;
+            }
+            public BlockLocation(int x, int y, int z) {
+                X = x; Y = y; Z = z;
             }
         }
         public struct QueuedBlockUpdate {

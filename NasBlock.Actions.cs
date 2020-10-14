@@ -32,6 +32,7 @@ namespace NotAwesomeSurvival {
         
         public static BlockID[] blocksPhysicsCanKill = new BlockID[] {
             0,
+            39,
             40
         };
         public static bool CanPhysicsKillThis(BlockID block) {
@@ -424,6 +425,44 @@ namespace NotAwesomeSurvival {
             IsThereLog(nl, x,   y,   z-1, leaf, iteration, ref canLive);
         }
         
+        
+        static NasBlockAction NeedsSupportAction() {
+            return (nl,x,y,z) => {
+                IsSupported(nl, x, y, z);
+            };
+        }
+        static NasBlockAction GenericPlantAction() {
+            return (nl,x,y,z) => {
+                GenericPlantSurvived(nl, x, y, z);
+            };
+        }
+        static NasBlockAction OakSaplingAction() {
+            return (nl,x,y,z) => {
+                if (!IsSupported(nl, x, y, z)) { return; }
+                if (!GenericPlantSurvived(nl, x, y, z)) { return; }
+                nl.SetBlock(x, y, z, Block.Air);
+                NasTree.GenOakTree(nl, r, x, y, z, true);
+            };
+        }
+        
+        
+        
+        static bool IsSupported(NasLevel nl, int x, int y, int z) {
+            BlockID below = nl.GetBlock(x, y-1, z);
+            if (CanPhysicsKillThis(below)) {
+                nl.SetBlock(x, y, z, Block.Air);
+                return false;
+            }
+            return true;
+        }
+        static bool GenericPlantSurvived(NasLevel nl, int x, int y, int z) {
+            if (!IsSupported(nl, x, y, z)) { return false; }
+            if (!CanPlantsLiveOn(nl.GetBlock(x, y-1, z))) {
+                nl.SetBlock(x, y, z, 39);
+                return false;
+            }
+            return true;
+        }
         static BlockID[] soilForPlants = new BlockID[] { Block.Dirt, Block.Extended|144 };
         static bool CanPlantsLiveOn(BlockID block) {
             
@@ -432,28 +471,7 @@ namespace NotAwesomeSurvival {
             }
             return false;
         }
-        
-        static NasBlockAction GenericPlantAction() {
-            return (nl,x,y,z) => {
-                BlockID below = nl.GetBlock(x, y-1, z);
-                if (CanPhysicsKillThis(below)) {
-                    nl.SetBlock(x, y, z, Block.Air);
-                    return;
-                }
-                if (!CanPlantsLiveOn(nl.GetBlock(x, y-1, z))) {
-                    nl.SetBlock(x, y, z, 39);
-                }
-            };
-        }
-        
-        static NasBlockAction NeedsSupportAction() {
-            return (nl,x,y,z) => {
-                BlockID below = nl.GetBlock(x, y-1, z);
-                if (CanPhysicsKillThis(below)) {
-                    nl.SetBlock(x, y, z, Block.Air);
-                }
-            };
-        }
+
         
         
     }

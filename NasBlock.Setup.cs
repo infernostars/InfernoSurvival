@@ -187,9 +187,13 @@ namespace NotAwesomeSurvival {
             i = 16; //Log-NS
             blocks[i] = new NasBlock(i, blocks[17]);
 
-
+            const float treeDelayMin = 30f;
+            const float treeDelayMax = 60f;
             i = 6; //Sapling
             blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbDelayMin = treeDelayMin;
+            blocks[i].disturbDelayMax = treeDelayMax;
+            blocks[i].disturbedAction = OakSaplingAction();
 
             i = 7; //Bedrock
             blocks[i] = new NasBlock(i, Material.Stone, int.MaxValue);
