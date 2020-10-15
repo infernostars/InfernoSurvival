@@ -10,9 +10,10 @@ using MCGalaxy.Generator.Foliage;
 namespace NotAwesomeSurvival {
 
     public static class NasGen {
-        public const int mapDims = 256;
+        public const int mapWideness = 256;
+        public const int mapTallness = 256;
         public const string seed = "a";
-        public const ushort oceanHeight = 64;
+        public const ushort oceanHeight = 60;
         public const ushort coalDepth = 4;
         public const ushort ironDepth = 16;
         public const ushort goldDepth = 50;
@@ -63,10 +64,11 @@ namespace NotAwesomeSurvival {
             int chunkOffsetX = 0, chunkOffsetZ = 0;
             GetSeedAndChunkOffset(lvl.name, ref seed, ref chunkOffsetX, ref chunkOffsetZ);
             
-            offsetX = chunkOffsetX * mapDims;
-            offsetZ = chunkOffsetZ * mapDims;
+            offsetX = chunkOffsetX * mapWideness;
+            offsetZ = chunkOffsetZ * mapWideness;
             offsetX -= chunkOffsetX;
             offsetZ -= chunkOffsetZ;
+            p.Message("offsetX offsetZ {0} {1}", offsetX, offsetZ);
 
             Perlin adjNoise = new Perlin();
             adjNoise.Seed = MapGen.MakeInt(seed);
@@ -84,7 +86,7 @@ namespace NotAwesomeSurvival {
             instance.Do();
 
             lvl.Config.Deletable = false;
-            lvl.Config.MOTD = "-hax +thirdperson";
+            lvl.Config.MOTD = "hax +thirdperson";
             lvl.Config.GrassGrow = false;
             TimeSpan timeTaken = DateTime.UtcNow.Subtract(dateStart);
             p.Message("Done in {0}", timeTaken.Shorten(true, true));
@@ -122,16 +124,20 @@ namespace NotAwesomeSurvival {
             }
 
             void CalcTemps() {
+                adjNoise.OctaveCount = 2;
                 p.Message("Calculating temperatures");
                 temps = new float[lvl.Width, lvl.Length];
                 for (double z = 0; z < lvl.Length; ++z) {
                     for (double x = 0; x < lvl.Width; ++x) {
-                        //divide by less for smaller scale
-                        double xVal = (x + offsetX) / 150, zVal = (z + offsetZ) / 150;
+                        //divide by more for bigger scale
+                        double scale = 150;
+                        double xVal = (x + offsetX) / scale, zVal = (z + offsetZ) / scale;
                         const double adj = 1;
                         xVal += adj;
                         zVal += adj;
-                        float val = (float)adjNoise.GetValue(xVal, 0, zVal)+0.5f;
+                        float val = (float)adjNoise.GetValue(xVal, 0, zVal);
+                        val+= 0.5f;
+                        val/= 2;
                         if (z == 0) { Player.Console.Message("temp is {0}", val); }
                         temps[(int)x, (int)z] = val;
                     }
@@ -167,10 +173,22 @@ namespace NotAwesomeSurvival {
                             double threshDiv = temps[(int)x,(int)z];
                             if (threshDiv <= 0) { threshDiv = 0; }
                             
+                            
+                            
+                            //double tallRandom = adjNoise.GetValue((x+offsetX)/500, 0, (z+offsetZ)/500);
+                            //tallRandom*= 200;
+                            //if (tallRandom <= 0.0) { tallRandom = 0.0; }
+                            //else if (tallRandom > 1.0) { tallRandom = 1.0; }
+                            
+                            
+                            double averageLandHeightAboveSeaLevel = 10;// - (6*tallRandom);
+                            double minimumFlatness = 4.5;
+                            double flatnessAdded = 20;
+                            
                             //multiply by more to more strictly follow halfway under = solid, above = air
                             double threshold =
-                                (((y + (64 - 16)) / (height)) - 0.5)
-                                * (4.5 + (25 * threshDiv)); //4.5f
+                                (((y + (oceanHeight - averageLandHeightAboveSeaLevel)) / (height)) - 0.5)
+                                * (minimumFlatness + (flatnessAdded * threshDiv)); //4.5f
 
                             
                             if (threshold < -1.5) {
@@ -181,8 +199,8 @@ namespace NotAwesomeSurvival {
 
                             //divide y by less for more "layers"
                             
-                            double xVal = (x + offsetX) / 200, yVal = y / (250 + (250 * threshDiv)), zVal = (z + offsetZ) / 200;
-                            const double shrink = 3;
+                            double xVal = (x + offsetX) / 200, yVal = y / (250 + (150 * threshDiv)), zVal = (z + offsetZ) / 200;
+                            const double shrink = 1.8;
                             xVal *= shrink;
                             yVal *= shrink;
                             zVal *= shrink;
@@ -251,7 +269,7 @@ namespace NotAwesomeSurvival {
                                 soil = GetSoilType(x, z);
                                 if (y <= oceanHeight - 12) {
                                     soil = Block.Gravel;
-                                } else if (y <= oceanHeight + 1) {
+                                } else if (y <= oceanHeight) {
                                     soil = Block.Sand;
                                 }
 
@@ -365,7 +383,7 @@ namespace NotAwesomeSurvival {
 
             
             BlockID GetSoilType(int x, int z) {
-                //if (temps[x,z] > 0.5) {
+                //if (temps[x,z] > 0.5f) {
                 //    return Block.Sand;
                 //}
                 return Block.Dirt;

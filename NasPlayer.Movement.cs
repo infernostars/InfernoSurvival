@@ -46,6 +46,7 @@ namespace NotAwesomeSurvival {
         public void SpawnPlayerFirstTime(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (hasBeenSpawned) { return; }
             atBorder = true;
+            p.invincible = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
             //p.Message("HP is {0}", HP);
             if (HP == 0) {
@@ -152,7 +153,7 @@ namespace NotAwesomeSurvival {
         static void GenTask(SchedulerTask task) {
             GenInfo info = (GenInfo)task.State;
             info.p.Message("Seed is {0}", info.seed);
-            Command.Find("newlvl").Use(info.p, info.mapName + " " + NasGen.mapDims + " " + NasGen.mapDims + " " + NasGen.mapDims + " nasgen " + info.seed);
+            Command.Find("newlvl").Use(info.p, info.mapName + " " + NasGen.mapWideness + " " + NasGen.mapTallness + " " + NasGen.mapWideness + " nasgen " + info.seed);
         }
         [JsonIgnore] public TransferInfo transferInfo = null;
         public class TransferInfo {
@@ -164,8 +165,9 @@ namespace NotAwesomeSurvival {
                 this.chunkOffsetZ = chunkOffsetZ;
             }
             public void CalcNewPos() {
-                int xOffset = chunkOffsetX * NasGen.mapDims * 32;
-                int zOffset = chunkOffsetZ * NasGen.mapDims * 32;
+                //* 32 because its in player units
+                int xOffset = chunkOffsetX * NasGen.mapWideness * 32;
+                int zOffset = chunkOffsetZ * NasGen.mapWideness * 32;
                 posBeforeMapChange.X -= xOffset;
                 posBeforeMapChange.Z -= zOffset;
             }
