@@ -65,6 +65,7 @@
     <Compile Include="Drop.cs" />
     <Compile Include="ItemProp.Setup.cs" />
     <Compile Include="NasBlock.Actions.cs" />
+    <Compile Include="NasBlock.CollideActions.cs" />
     <Compile Include="NasBlock.Interactions.cs" />
     <Compile Include="NasBlock.Setup.cs" />
     <Compile Include="NasColor.cs" />

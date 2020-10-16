@@ -63,7 +63,7 @@ namespace NotAwesomeSurvival {
         /// <returns>The index of the set that the block is at
         /// or -1 if the block does not exist within the set.
         /// </returns>
-        static int IsPartOfSet(BlockID[] set, BlockID block) {
+        public static int IsPartOfSet(BlockID[] set, BlockID block) {
             for (int i = 0; i < set.Length; i++) {
                 if (set[i] == block) { return i; }
             }
@@ -436,6 +436,8 @@ namespace NotAwesomeSurvival {
                 GenericPlantSurvived(nl, x, y, z);
             };
         }
+        
+        public static BlockID[] leafSet = new BlockID[] { Block.Leaves };
         static NasBlockAction OakSaplingAction() {
             return (nl,x,y,z) => {
                 if (!IsSupported(nl, x, y, z)) { return; }

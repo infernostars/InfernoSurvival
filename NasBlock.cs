@@ -8,7 +8,12 @@ using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>
 using NasBlockInteraction =
     System.Action<NotAwesomeSurvival.NasPlayer, MCGalaxy.Events.PlayerEvents.MouseButton, MCGalaxy.Events.PlayerEvents.MouseAction,
     NotAwesomeSurvival.NasBlock, ushort, ushort, ushort>;
+    
 using NasBlockExistAction =
+    System.Action<NotAwesomeSurvival.NasPlayer,
+    NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
+    
+using NasBlockCollideAction =
     System.Action<NotAwesomeSurvival.NasPlayer,
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
@@ -90,6 +95,7 @@ namespace NotAwesomeSurvival {
         public NasBlockAction disturbedAction = null;
         public NasBlockInteraction interaction = null;
         public NasBlockExistAction existAction = null;
+        public NasBlockCollideAction collideAction = null;//DefaultCollideAction();
 
         public NasBlock(BlockID id, Material mat) {
             selfID = id;
@@ -101,6 +107,7 @@ namespace NotAwesomeSurvival {
             dropHandler = DefaultDropHandler;
             resourceCost = 1;
             station = null;
+            
         }
         public NasBlock(BlockID id, Material mat, int dur, int tierOfToolNeededToBreak = 0) : this(id, mat) {
             durability = dur;

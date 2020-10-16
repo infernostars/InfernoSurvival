@@ -46,7 +46,6 @@ namespace NotAwesomeSurvival {
         public void SpawnPlayerFirstTime(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (hasBeenSpawned) { return; }
             atBorder = true;
-            p.invincible = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
             //p.Message("HP is {0}", HP);
             if (HP == 0) {
@@ -89,7 +88,7 @@ namespace NotAwesomeSurvival {
                         float damage = (int)fallHeight * 2;
                         damage /= 4;
                         //p.Message("damage is {0}", damage*fallDamageMultiplier);
-                        TakeDamage(damage*fallDamageMultiplier, "falling");
+                        TakeDamage(damage*fallDamageMultiplier, DamageSource.Falling);
                     }
                 }
                 lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(next.X, next.Y, next.Z);
@@ -180,7 +179,7 @@ namespace NotAwesomeSurvival {
         public void UpdateCaveFog(Position next) {
             if (!NasLevel.all.ContainsKey(p.level.name)) { return; }
 
-            const float change = 0.03125f;
+            const float change = 0.03125f;//0.03125f;
             if (curRenderDistance > targetRenderDistance) {
                 curRenderDistance *= 1 - change;
                 if (curRenderDistance < targetRenderDistance) { curRenderDistance = targetRenderDistance; }

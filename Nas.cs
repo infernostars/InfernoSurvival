@@ -199,11 +199,11 @@ namespace NotAwesomeSurvival {
             
             
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
-                //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.ChangeHealth(0.5f);
+                p.Message("nasBlock {0}", NasBlock.blocksIndexedByServerBlockID[p.level.GetBlock(x, y, z)].GetName(p));
+                NasBlock.blocks[1].collideAction(np, NasBlock.blocks[1], true, x, y, z);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
-                //NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
                 //np.TakeDamage(0.5f);
             }
             

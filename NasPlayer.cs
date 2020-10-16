@@ -93,24 +93,43 @@ namespace NotAwesomeSurvival {
             base.ChangeHealth(diff);
             DisplayHealth();
         }
-        /// <summary>
-        /// returns true if dead
-        /// </summary>
-        /// <param name="damage"></param>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public bool TakeDamage(float damage, string source = "unknown causes") {
+        
+        public override bool CanTakeDamage(DamageSource source) {
+            return false;
             if (p.invincible) { return false; }
             TimeSpan timeSinceDeath = DateTime.UtcNow.Subtract(lastDeathDate);
             if (timeSinceDeath.TotalMilliseconds < 2000) {
                 //p.Message("You cannot take damage after dying until 2 seconds have passed");
                 return false;
             }
+            
+            if (source == DamageSource.Suffocating) {
+                TimeSpan timeSinceSuffocation = DateTime.UtcNow.Subtract(lastSuffocationDate);
+                if (timeSinceSuffocation.TotalMilliseconds < SuffocationMilliseconds) {
+                    //p.Message("You cannot take damage after dying until 2 seconds have passed");
+                    return false;
+                }
+                lastSuffocationDate = DateTime.UtcNow;
+            }
+            return true;
+        }
+        /// <summary>
+        /// returns true if dead
+        /// </summary>
+        /// <param name="damage"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public override bool TakeDamage(float damage, DamageSource source, string customDeathReason = "") {
+            if (!CanTakeDamage(source)) { return false; }
+            
             if (damage == 0) { return false; }
             ChangeHealth(-damage);
             DisplayHealth("f", "&7[", "&7]");
             if (HP == 0) {
-                Die(source);
+                if (customDeathReason.Length == 0) {
+                    customDeathReason = DamageSource.GetName(typeof(DamageSource), source).ToLower();
+                }
+                Die(customDeathReason);
                 return true;
             }
             p.Send(Packet.VelocityControl(0, 0.25f, 0, 0, 0, 0));
@@ -129,7 +148,7 @@ namespace NotAwesomeSurvival {
             hasBeenSpawned = false;
             Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
             NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
-            p.HandleDeath(Block.Stone, p.ColoredName+"%c died%S from "+source+"%S.", false, true);
+            p.HandleDeath(Block.Stone, p.ColoredName+"%c died from "+source+".", false, true);
             HP = maxHP;
             //inventory = new Inventory(p);
             //inventory.Setup();

@@ -10,7 +10,7 @@ using MCGalaxy.Generator.Foliage;
 namespace NotAwesomeSurvival {
 
     public static class NasGen {
-        public const int mapWideness = 256;
+        public const int mapWideness = 384;
         public const int mapTallness = 256;
         public const string seed = "a";
         public const ushort oceanHeight = 60;
@@ -136,14 +136,15 @@ namespace NotAwesomeSurvival {
                         xVal += adj;
                         zVal += adj;
                         float val = (float)adjNoise.GetValue(xVal, 0, zVal);
-                        val+= 0.5f;
+                        val+= 0.1f;
                         val/= 2;
-                        if (z == 0) { Player.Console.Message("temp is {0}", val); }
+                        //if (z == 0) { Player.Console.Message("temp is {0}", val); }
                         temps[(int)x, (int)z] = val;
                     }
                 }
             }
             void GenTerrain() {
+                p.Message("Generating terrain");
                 //more frequency = smaller map scale
                 adjNoise.Frequency = 0.75;
                 adjNoise.OctaveCount = 5;
@@ -171,8 +172,10 @@ namespace NotAwesomeSurvival {
                             
                             
                             double threshDiv = temps[(int)x,(int)z];
+                            threshDiv*= 1.5;
                             if (threshDiv <= 0) { threshDiv = 0; }
-                            
+                            if (threshDiv > 1) { threshDiv = 1; }
+                            //threshDiv = 1;
                             
                             
                             //double tallRandom = adjNoise.GetValue((x+offsetX)/500, 0, (z+offsetZ)/500);
@@ -181,15 +184,15 @@ namespace NotAwesomeSurvival {
                             //else if (tallRandom > 1.0) { tallRandom = 1.0; }
                             
                             
-                            double averageLandHeightAboveSeaLevel = 10;// - (6*tallRandom);
-                            double minimumFlatness = 4.5;
-                            double flatnessAdded = 20;
+                            double averageLandHeightAboveSeaLevel = 1;// - (6*tallRandom);
+                            double minimumFlatness = 5;
+                            double maxFlatnessAdded = 28;
                             
                             //multiply by more to more strictly follow halfway under = solid, above = air
                             double threshold =
                                 (((y + (oceanHeight - averageLandHeightAboveSeaLevel)) / (height)) - 0.5)
-                                * (minimumFlatness + (flatnessAdded * threshDiv)); //4.5f
-
+                                * (minimumFlatness + (maxFlatnessAdded * threshDiv)); //4.5f
+                            //threshold = 0;
                             
                             if (threshold < -1.5) {
                                 lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Stone);
@@ -200,7 +203,7 @@ namespace NotAwesomeSurvival {
                             //divide y by less for more "layers"
                             
                             double xVal = (x + offsetX) / 200, yVal = y / (250 + (150 * threshDiv)), zVal = (z + offsetZ) / 200;
-                            const double shrink = 1.8;
+                            const double shrink = 2;
                             xVal *= shrink;
                             yVal *= shrink;
                             zVal *= shrink;
@@ -353,8 +356,7 @@ namespace NotAwesomeSurvival {
                             if (lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z) == Block.Dirt &&
                                 lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) == Block.Air) {
 
-                                if (r.Next(0, 50) == 0) {
-                                    if (!lvl.IsAirAt((ushort)x, (ushort)(y + 10), (ushort)z)) { continue; }
+                                if (r.Next(0, 50) == 0 && lvl.IsAirAt((ushort)x, (ushort)(y + 10), (ushort)z)) {
                                     
                                     double xVal = ((double)x + offsetX) / 200, yVal = (double)y / 130, zVal = ((double)z + offsetZ) / 200;
                                     const double adj = 1;
