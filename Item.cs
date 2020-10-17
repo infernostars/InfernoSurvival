@@ -9,22 +9,22 @@ namespace NotAwesomeSurvival {
         public string name;
         public float HP;
 
-        [JsonIgnoreAttribute] public ItemProp prop { get { return ItemProp.props[name]; } }
+        [JsonIgnore] public ItemProp prop { get { return ItemProp.props[name]; } }
 
         public Item(string name) {
             ItemProp prop = ItemProp.props[name];
             this.name = prop.name;
             this.HP = prop.baseHP;
         }
-        [JsonIgnoreAttribute]
+        [JsonIgnore]
         public string ColoredName {
             get { return "&" + ItemProp.props[name].color + name; }
         }
-        [JsonIgnoreAttribute]
+        [JsonIgnore]
         public string ColoredIcon {
             get { return "&" + ItemProp.props[name].color + ItemProp.props[name].character; }
         }
-        [JsonIgnoreAttribute]
+        [JsonIgnore]
         public ColorDesc[] healthColors {
             get {
                 if (HP == Int32.MaxValue) { return DynamicColor.defaultColors; }

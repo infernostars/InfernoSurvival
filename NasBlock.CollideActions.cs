@@ -9,7 +9,7 @@ using MCGalaxy.Maths;
 using MCGalaxy.Tasks;
 using BlockID = System.UInt16;
 using NasBlockCollideAction =
-    System.Action<NotAwesomeSurvival.NasPlayer,
+    System.Action<NotAwesomeSurvival.NasEntity,
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
 namespace NotAwesomeSurvival {
@@ -17,14 +17,33 @@ namespace NotAwesomeSurvival {
     public partial class NasBlock {
             
             
-            static NasBlockCollideAction DefaultCollideAction() {
-                return (np,nasBlock,headSurrounded,x,y,z) => {
+            public static NasBlockCollideAction DefaultSolidCollideAction() {
+                return (ne,nasBlock,headSurrounded,x,y,z) => {
                     if (headSurrounded) {
-                        np.TakeDamage(0.5f, NasEntity.DamageSource.Suffocating);
+                        if (ne.GetType() == typeof(NasPlayer)) {
+                            NasPlayer np = (NasPlayer)ne;
+                            np.p.Message("head surrounded @ {0} {1} {2}", x, y, z);
+                        }
+                        ne.TakeDamage(0.5f, NasEntity.DamageSource.Suffocating);
+                        
                     }
+                    
                 };
             }
             
+            public static NasBlockCollideAction LavaCollideAction() {
+                return (ne,nasBlock,headSurrounded,x,y,z) => {
+                    ne.TakeDamage(2.5f, NasEntity.DamageSource.Suffocating, "burning in lava");
+                };
+            }
+            
+            public static NasBlockCollideAction AirCollideAction() {
+                return (ne,nasBlock,headSurrounded,x,y,z) => {
+                    if (headSurrounded) {
+                        //refresh oxygen
+                    }
+                };
+            }
         
     }
 

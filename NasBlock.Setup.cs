@@ -21,6 +21,7 @@ namespace NotAwesomeSurvival {
             DefaultDurabilities[(int)Material.Metal] = 32;
 
             Default = new NasBlock(0, Material.Earth);
+            Default.collideAction = AirCollideAction();
 
             BlockID i;
             
@@ -29,6 +30,8 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbDelayMin = 1f;
             blocks[i].disturbDelayMax = 5f;
             blocks[i].disturbedAction = FloodAction(Block.Water);
+            
+            
             
             
             
@@ -82,7 +85,16 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbDelayMax = 0.2f;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
             
+            i = 10; //Active lava
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].disturbDelayMin = 1f;
+            blocks[i].disturbDelayMax = 5f;
+            blocks[i].disturbedAction = FloodAction(Block.Lava);
+            blocks[i].collideAction = LavaCollideAction();
             
+            i = 11; //Lava
+            blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].collideAction = LavaCollideAction();
             
             
             
@@ -113,6 +125,26 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
             blocks[i] = new NasBlock(i, blocks[163]);
             
+            const int stonebrickDurMulti = 2;
+            i = 64; //Marker
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
+            i = 65; //Stone brick
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
+            i = 86; //Stone brick slab
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
+            blocks[i] = new NasBlock(i++, blocks[86]);
+            i = 75; //Stone pole
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
+            blocks[i] = new NasBlock(i++, blocks[75]);
+            blocks[i] = new NasBlock(i++, blocks[75]);
+            i = 278; //Stone brick wall-N
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
+            blocks[i] = new NasBlock(i++, blocks[278]);
+            blocks[i] = new NasBlock(i++, blocks[278]);
+            blocks[i] = new NasBlock(i++, blocks[278]);
+            i = 477; //Lined stone
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
+            
             const float grassDelayMin = 10;
             const float grassDelayMax = 60;
             i = 2; //Grass
@@ -124,14 +156,21 @@ namespace NotAwesomeSurvival {
                 Drop grassDrop = new Drop();
                 grassDrop.blockStacks = new List<BlockStack>();
                 grassDrop.blockStacks.Add(new BlockStack(3, 1));
-                //grassDrop.blockStacks.Add(new BlockStack(162, 1));
-                //grassDrop.blockStacks.Add(new BlockStack(4, 10));
-                //grassDrop.blockStacks.Add(new BlockStack(12, 6));
-                //grassDrop.blockStacks.Add(new BlockStack(1, 16));
-                //grassDrop.items = new List<Item>();
-                //grassDrop.items.Add(new Item("Stone Pickaxe") );
                 return grassDrop;
             };
+            i = 129; //Wet grass
+            blocks[i] = new NasBlock(i, Material.Earth);
+            blocks[i].disturbDelayMin = grassDelayMin;
+            blocks[i].disturbDelayMax = grassDelayMax;
+            blocks[i].disturbedAction = GrassBlockAction(Block.Extended|129, Block.Dirt);
+            blocks[i].dropHandler = (dropID) => {
+                Drop grassDrop = new Drop();
+                grassDrop.blockStacks = new List<BlockStack>();
+                grassDrop.blockStacks.Add(new BlockStack(3, 1));
+                return grassDrop;
+            };
+            
+            
 
             i = 3; //Dirt
             blocks[i] = new NasBlock(i, Material.Earth);
@@ -214,7 +253,6 @@ namespace NotAwesomeSurvival {
             const float leafShrivelDelayMax = 1f;
             i = 18; //Leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
-            blocks[i].damageDoneToTool = 0;
             blocks[i].disturbedAction = LeafBlockAction(logSet, Block.Leaves);
             blocks[i].disturbDelayMin = leafShrivelDelayMin;
             blocks[i].disturbDelayMax = leafShrivelDelayMax;
@@ -226,7 +264,6 @@ namespace NotAwesomeSurvival {
             };
             i = 19; //Dark leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
-            blocks[i].damageDoneToTool = 0;
 
             i = 20; //Glass
             blocks[i] = new NasBlock(i, Material.Glass);
@@ -243,6 +280,9 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbedAction = NeedsSupportAction();
             
             i = 40; //Tall grass
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = GenericPlantAction();
+            i = 130; //Wet tall grass
             blocks[i] = new NasBlock(i, Material.Plant);
             blocks[i].disturbedAction = GenericPlantAction();
 
@@ -342,27 +382,14 @@ namespace NotAwesomeSurvival {
             i = 63; //Pillar-UD
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
 
-            i = 64; //Marker
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
 
-            i = 65; //Stone brick
-            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
 
             i = 74; //Dark pillar
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
 
-            i = 75; //Stone pole
-            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            blocks[i] = new NasBlock(i++, blocks[75]);
-            blocks[i] = new NasBlock(i++, blocks[75]);
-
-            i = 86; //Stone brick slab
-            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
-            blocks[i] = new NasBlock(i++, blocks[86]);
 
             i = 104; //Dry leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
-            blocks[i].damageDoneToTool = 0;
 
             
             //Drawers

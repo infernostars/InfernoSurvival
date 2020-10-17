@@ -215,6 +215,44 @@ namespace NotAwesomeSurvival {
                 {  1, 1, 1 }
             };
 
+            
+            //stonebrick
+            Recipe marker = new Recipe(64, 1);
+            marker.pattern = new BlockID[,] {
+                {  65, 65, 65 },
+                {  65,  0, 65 },
+                {  65, 65, 65 }
+            };
+            Recipe stoneBrick = new Recipe(65, 6);
+            stoneBrick.pattern = new BlockID[,] {
+                {  1, 1, 0 },
+                {  0, 1, 1 },
+                {  1, 1, 0 }
+            };
+            Recipe stoneBrickSlab = new Recipe(86, 6);
+            stoneBrickSlab.pattern = new BlockID[,] {
+                {  65, 65, 65 }
+            };
+            Recipe stoneBrickWall = new Recipe(278, 6);
+            stoneBrickWall.pattern = new BlockID[,] {
+                {  65 },
+                {  65 },
+                {  65 }
+            };
+            Recipe stonePole = new Recipe(75, 4);
+            stonePole.pattern = new BlockID[,] {
+                {  65 },
+                {  65 }
+            };
+            Recipe linedStone = new Recipe(477, 1);
+            linedStone.pattern = new BlockID[,] {
+                {  65, 65 },
+                {  65, 65 }
+            };
+            
+            
+            
+            
             Recipe cobbleBrick = new Recipe(4, 4);
             cobbleBrick.pattern = new BlockID[,] {
                 {  162, 162 },

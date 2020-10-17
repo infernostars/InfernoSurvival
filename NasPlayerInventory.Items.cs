@@ -12,9 +12,9 @@ namespace NotAwesomeSurvival {
         public const int maxItems = 27;
         public const int itemBarLength = 9;
         public int selectedItemIndex = 0;
-        [JsonIgnoreAttribute] public ColorDesc[] selectorColors = DynamicColor.defaultColors;
+        [JsonIgnore] public ColorDesc[] selectorColors = DynamicColor.defaultColors;
 
-        [JsonIgnoreAttribute]
+        [JsonIgnore]
         public Item HeldItem {
             get { return items[selectedItemIndex] == null ? Item.Fist : items[selectedItemIndex]; }
         }
@@ -40,8 +40,8 @@ namespace NotAwesomeSurvival {
             p.Message("You can't get {0}%S because your tool bag is full.", item.ColoredName);
             return false;
         }
-        [NonSerialized()] public bool bagOpen = false;
-        [NonSerialized()] private int slotToMoveTo = -1;
+        [JsonIgnore] public bool bagOpen = false;
+        [JsonIgnore] private int slotToMoveTo = -1;
         public void ToggleBagOpen() {
             deleting = false;
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
@@ -186,7 +186,7 @@ namespace NotAwesomeSurvival {
             //p.Message("Length of it is {0}", final.Length);
         }
 
-        [NonSerialized()] private bool deleting = false;
+        [JsonIgnore] private bool deleting = false;
         public void DeleteItem(bool confirmed = false) {
             //don't even fuck with deleting if they're moving items
             if (slotToMoveTo != -1) { return; }

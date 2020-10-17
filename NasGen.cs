@@ -351,7 +351,7 @@ namespace NotAwesomeSurvival {
                 for (int y = 0; y < (ushort)(lvl.Height - 1); y++)
                     for (int z = 0; z < lvl.Length; ++z)
                         for (int x = 0; x < lvl.Width; ++x) {
-                            topSoil = Block.Grass;
+                            topSoil = Block.Extended|129; //Block.Grass;
 
                             if (lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z) == Block.Dirt &&
                                 lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) == Block.Air) {
@@ -370,8 +370,8 @@ namespace NotAwesomeSurvival {
                                         GenTree((ushort)x, (ushort)(y+1), (ushort)z);
                                     }
                                 } else if (r.Next(0, 2) == 0) {
-                                    //tallgrass
-                                    lvl.SetBlock((ushort)x, (ushort)(y+1), (ushort)z, 40);
+                                    //tallgrass 40 wettallgrass Block.Extended|130
+                                    lvl.SetBlock((ushort)x, (ushort)(y+1), (ushort)z, Block.Extended|130);
                                 }
 
                                 lvl.SetBlock((ushort)x, (ushort)(y), (ushort)z, topSoil);

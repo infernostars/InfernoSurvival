@@ -33,7 +33,8 @@ namespace NotAwesomeSurvival {
         public static BlockID[] blocksPhysicsCanKill = new BlockID[] {
             0,
             39,
-            40
+            40,
+            Block.Extended|130
         };
         public static bool CanPhysicsKillThis(BlockID block) {
             for (int i = 0; i < blocksPhysicsCanKill.Length; i++) {

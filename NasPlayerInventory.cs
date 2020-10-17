@@ -4,6 +4,7 @@ using MCGalaxy.Blocks;
 using MCGalaxy.Network;
 using MCGalaxy.Tasks;
 using System;
+using Newtonsoft.Json;
 
 namespace NotAwesomeSurvival {
 
@@ -101,7 +102,7 @@ namespace NotAwesomeSurvival {
             return blocks[clientBlockID];
         }
 
-        [NonSerialized()] public CpeMessageType whereHeldBlockIsDisplayed = CpeMessageType.BottomRight3;
+        [JsonIgnore] public CpeMessageType whereHeldBlockIsDisplayed = CpeMessageType.BottomRight3;
         public void DisplayHeldBlock(NasBlock nasBlock, int amountChanged = 0, bool showToNormalChat = false) {
 
             string display = DisplayedBlockString(nasBlock);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using MCGalaxy;
 using MCGalaxy.Blocks;
@@ -29,7 +30,7 @@ namespace NotAwesomeSurvival {
 
         public void SpawnPlayer(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (level.Config.Deletable && level.Config.Buildable) { return; } //not a nas map
-
+            canDoStuffBasedOnPosition = false;
             inventory.Setup();
             if (!hasBeenSpawned) { SpawnPlayerFirstTime(level, ref spawnPos, ref yaw, ref pitch); return; }
 
@@ -38,7 +39,7 @@ namespace NotAwesomeSurvival {
                 spawnPos = transferInfo.posBeforeMapChange;
                 yaw = transferInfo.yawBeforeMapChange;
                 pitch = transferInfo.pitchBeforeMapChange;
-
+                
                 atBorder = true;
                 transferInfo = null;
             }
@@ -47,11 +48,8 @@ namespace NotAwesomeSurvival {
             if (hasBeenSpawned) { return; }
             atBorder = true;
             if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
-            //p.Message("HP is {0}", HP);
-            if (HP == 0) {
-                //p.Message("resetting date they died");
-                lastDeathDate = DateTime.UtcNow;
-            }
+
+            
             spawnPos = new Position(location.X, location.Y, location.Z);
             yaw = this.yaw;
             pitch = this.pitch;
@@ -59,28 +57,42 @@ namespace NotAwesomeSurvival {
 
             if (level.name != levelName) {
                 //goto will call OnPlayerSpawning again to complete the spawn
-                Command.Find("goto").Use(p, levelName);
+                p.HandleCommand("goto", levelName, p.DefaultCmdData);
                 return;
             }
             hasBeenSpawned = true;
         }
+        
+        
         [JsonIgnore] int round = 0;
         public void DoMovement(Position next, byte yaw, byte pitch) {
-            
-            CheckGround(next);
-            CheckMapCrossing(p.Pos);
             UpdateHeldBlock();
+            CheckMapCrossing(p.Pos);
+            //p.Message("%gPos {0} {1} {2} %b{3}", next.FeetBlockCoords.X, next.FeetBlockCoords.Y, next.FeetBlockCoords.Z, Environment.TickCount);
+            if (canDoStuffBasedOnPosition) { DoNasBlockCollideActions(next); }
+            CheckGround(p.Pos);
             UpdateCaveFog(next);
             round++;
         }
+        [JsonIgnore] DateTime datePositionCheckingIsAllowed = DateTime.MinValue;
+        [JsonIgnore] bool canDoStuffBasedOnPosition {
+            get {
+                if (DateTime.UtcNow >= datePositionCheckingIsAllowed) { return true; }
+                return false;
+            }
+            set {
+                //if (p != null) { p.Message("canDoStuffBasedOnPosition: {0}", value); }
+                if (!value) { datePositionCheckingIsAllowed = DateTime.UtcNow.AddMilliseconds(2000+p.Ping.AveragePing()); }
+            }
+        }
+                
         void CheckGround(Position next) {
             Position below = next;
             below.Y-= 2;
             float fallDamageMultiplier = 1;
             if (Collision.TouchesGround(p.level, bounds, below, out fallDamageMultiplier)) {
-                
                 float fallHeight = lastGroundedLocation.Y - next.Y;
-                if (fallHeight > 0) {
+                if (fallHeight > 0 && canDoStuffBasedOnPosition) {
                     fallHeight /= 32f;
                     fallHeight-= 4;
                     
@@ -94,7 +106,7 @@ namespace NotAwesomeSurvival {
                 lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(next.X, next.Y, next.Z);
             }
         }
-        [JsonIgnoreAttribute] bool atBorder = true;
+        [JsonIgnore] bool atBorder = true;
         void CheckMapCrossing(Position next) {
             if (next.BlockX <= 0) {
                 TryGoMapAt(-1, 0);
@@ -130,10 +142,10 @@ namespace NotAwesomeSurvival {
             string mapName = seed+"_"+chunkOffsetX + "," + chunkOffsetZ;
             if (File.Exists("levels/" + mapName + ".lvl")) {
                 transferInfo = new TransferInfo(p, dirX, dirZ);
-                Command.Find("goto").Use(p, mapName);
+                p.HandleCommand("goto", mapName, p.DefaultCmdData);
             } else {
                 if (NasGen.currentlyGenerating) {
-                    p.Message("A map is already generating! Please try again when it is finished.");
+                    p.Message("%cA map is already generating!");
                     return;
                 }
                 GenInfo info = new GenInfo();

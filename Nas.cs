@@ -200,8 +200,9 @@ namespace NotAwesomeSurvival {
             
             if (button == MouseButton.Middle && action == MouseAction.Pressed) {
                 //np.ChangeHealth(0.5f);
-                p.Message("nasBlock {0}", NasBlock.blocksIndexedByServerBlockID[p.level.GetBlock(x, y, z)].GetName(p));
-                NasBlock.blocks[1].collideAction(np, NasBlock.blocks[1], true, x, y, z);
+                BlockID here = p.level.GetBlock(x, y, z);
+                //p.Message("nasBlock {0}", NasBlock.blocksIndexedByServerBlockID[here].GetName(p));
+                //NasBlock.blocksIndexedByServerBlockID[here].collideAction(np, NasBlock.blocks[1], true, x, y, z);
             }
             if (button == MouseButton.Right && action == MouseAction.Pressed) {
                 //np.TakeDamage(0.5f);

@@ -13,16 +13,16 @@ using MCGalaxy.Tasks;
 namespace NotAwesomeSurvival {
 
     public partial class NasPlayer : NasEntity {
-        [NonSerialized()] public Player p;
-        [JsonIgnore] public NasLevel nl;
-        [NonSerialized()] public NasBlock heldNasBlock = NasBlock.Default;
-        [NonSerialized()] public ushort breakX = ushort.MaxValue, breakY = ushort.MaxValue, breakZ = ushort.MaxValue;
-        [NonSerialized()] public int breakAttempt = 0;
-        [NonSerialized()] public DateTime? lastAirClickDate = null;
-        [NonSerialized()] public DateTime lastLeftClickReleaseDate = DateTime.MinValue;
-        [JsonIgnoreAttribute] public bool justBrokeOrPlaced = false;
-        [JsonIgnoreAttribute] public byte craftingAreaID = 0;
-        [JsonIgnoreAttribute] public bool isChewing = false;
+        [JsonIgnore] public Player p;
+        [JsonIgnore] public NasBlock heldNasBlock = NasBlock.Default;
+        [JsonIgnore] public ushort breakX = ushort.MaxValue, breakY = ushort.MaxValue, breakZ = ushort.MaxValue;
+        [JsonIgnore] public int breakAttempt = 0;
+        [JsonIgnore] public DateTime? lastAirClickDate = null;
+        [JsonIgnore] public DateTime lastLeftClickReleaseDate = DateTime.MinValue;
+        [JsonIgnore] public bool justBrokeOrPlaced = false;
+        [JsonIgnore] public byte craftingAreaID = 0;
+        [JsonIgnore] public bool isChewing = false;
+        
         
         public void ResetBreaking() {
             breakX = breakY = breakZ = ushort.MaxValue;
@@ -39,10 +39,10 @@ namespace NotAwesomeSurvival {
         public Inventory inventory;
         public bool hasBeenSpawned;
 
-        [JsonIgnoreAttribute] public Color targetFogColor = Color.White;
-        [JsonIgnoreAttribute] public Color curFogColor = Color.White;
-        [JsonIgnoreAttribute] public float targetRenderDistance = Server.Config.MaxFogDistance;
-        [JsonIgnoreAttribute] public float curRenderDistance = Server.Config.MaxFogDistance;
+        [JsonIgnore] public Color targetFogColor = Color.White;
+        [JsonIgnore] public Color curFogColor = Color.White;
+        [JsonIgnore] public float targetRenderDistance = Server.Config.MaxFogDistance;
+        [JsonIgnore] public float curRenderDistance = Server.Config.MaxFogDistance;
         
         public NasPlayer(Player p) {
             this.p = p;
@@ -95,18 +95,13 @@ namespace NotAwesomeSurvival {
         }
         
         public override bool CanTakeDamage(DamageSource source) {
-            return false;
+            //return false;
             if (p.invincible) { return false; }
-            TimeSpan timeSinceDeath = DateTime.UtcNow.Subtract(lastDeathDate);
-            if (timeSinceDeath.TotalMilliseconds < 2000) {
-                //p.Message("You cannot take damage after dying until 2 seconds have passed");
-                return false;
-            }
+            if (!hasBeenSpawned) { p.Message("hasnt been spawned"); return false; }
             
             if (source == DamageSource.Suffocating) {
                 TimeSpan timeSinceSuffocation = DateTime.UtcNow.Subtract(lastSuffocationDate);
                 if (timeSinceSuffocation.TotalMilliseconds < SuffocationMilliseconds) {
-                    //p.Message("You cannot take damage after dying until 2 seconds have passed");
                     return false;
                 }
                 lastSuffocationDate = DateTime.UtcNow;
@@ -116,9 +111,6 @@ namespace NotAwesomeSurvival {
         /// <summary>
         /// returns true if dead
         /// </summary>
-        /// <param name="damage"></param>
-        /// <param name="source"></param>
-        /// <returns></returns>
         public override bool TakeDamage(float damage, DamageSource source, string customDeathReason = "") {
             if (!CanTakeDamage(source)) { return false; }
             
@@ -142,19 +134,18 @@ namespace NotAwesomeSurvival {
             NasPlayer np = (NasPlayer)task.State;
             np.DisplayHealth();
         }
-        [JsonIgnoreAttribute] DateTime lastDeathDate = DateTime.MinValue;
         public override void Die(string source) {
-            lastDeathDate = DateTime.UtcNow;
             hasBeenSpawned = false;
             Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
             NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
+            lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(Server.mainLevel.SpawnPos.X, Server.mainLevel.SpawnPos.Y, Server.mainLevel.SpawnPos.Z);
             p.HandleDeath(Block.Stone, p.ColoredName+"%c died from "+source+".", false, true);
             HP = maxHP;
             //inventory = new Inventory(p);
             //inventory.Setup();
             DisplayHealth();
         }
-        [NonSerialized()] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
+        [JsonIgnore] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
         public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7]¼") {
             p.SendCpeMessage(whereHealthIsDisplayed, prefix + HealthString(healthColor) + suffix);
         }

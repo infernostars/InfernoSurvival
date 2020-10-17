@@ -32,12 +32,12 @@ namespace NotAwesomeSurvival {
             public DateTime date;
         }
         
-        [JsonIgnoreAttribute] public static Dictionary<string, NasLevel> all = new Dictionary<string, NasLevel>();
-        [JsonIgnoreAttribute] public Level lvl;
+        [JsonIgnore] public static Dictionary<string, NasLevel> all = new Dictionary<string, NasLevel>();
+        [JsonIgnore] public Level lvl;
         public ushort[,] heightmap;
         public List<BlockLocation> blocksThatMustBeDisturbed = new List<BlockLocation>();
         public Dictionary<string, NasBlock.Entity> blockEntities = new Dictionary<string, NasBlock.Entity>();
-        [JsonIgnoreAttribute] public SimplePriorityQueue<QueuedBlockUpdate, DateTime> tickQueue = new SimplePriorityQueue<QueuedBlockUpdate, DateTime>();
+        [JsonIgnore] public SimplePriorityQueue<QueuedBlockUpdate, DateTime> tickQueue = new SimplePriorityQueue<QueuedBlockUpdate, DateTime>();
         [JsonIgnore] public SchedulerTask schedulerTask;
         
         public void BeginTickTask() {

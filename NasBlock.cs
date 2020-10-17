@@ -14,7 +14,7 @@ using NasBlockExistAction =
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
     
 using NasBlockCollideAction =
-    System.Action<NotAwesomeSurvival.NasPlayer,
+    System.Action<NotAwesomeSurvival.NasEntity,
     NotAwesomeSurvival.NasBlock, bool, ushort, ushort, ushort>;
 
 namespace NotAwesomeSurvival {
@@ -104,6 +104,7 @@ namespace NotAwesomeSurvival {
             tierOfToolNeededToBreak = 0;
             durability = DefaultDurabilities[(int)mat];
             damageDoneToTool = 1f;
+            if (material == Material.Plant || material == Material.Leaves) { damageDoneToTool = 0; }
             dropHandler = DefaultDropHandler;
             resourceCost = 1;
             station = null;
