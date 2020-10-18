@@ -14,29 +14,32 @@ namespace NotAwesomeSurvival {
 
     public partial class NasEntity {
         public enum DamageSource { Falling, Suffocating, Drowning, Entity, None }
+        public static string DeathReason(DamageSource source) {
+            switch (source) {
+                case NasEntity.DamageSource.Falling:
+                    return "@p %cfell to their death.";
+                case NasEntity.DamageSource.Suffocating:
+                    return "@p %esuffocated.";
+                case NasEntity.DamageSource.Drowning:
+                    return "@p %rdrowned.";
+                case NasEntity.DamageSource.None:
+                    return "@p %adied from unknown causes.";
+            }
+            return DamageSource.GetName(typeof(DamageSource), source).ToLower();
+        }
         public const int SuffocationMilliseconds = 500;
         
         public float HP;
         public const float maxHP = 10;
-        public int Air;
+        public float Air;
+        public const float maxAir = 10;
+        public bool holdingBreath = false;
         public string levelName;
         [JsonIgnore] public NasLevel nl;
         public Vec3S32 location;
         
         public Vec3S32 lastGroundedLocation;
-        //[JsonIgnore] public Vec3S32 _lastGroundedLocation;
-        //{
-        //    get {
-        //        return _lastGroundedLocation;
-        //    }
-        //    set {
-        //        if (this.GetType() == typeof(NasPlayer)) {
-        //            NasPlayer np = (NasPlayer)this;
-        //            if (np.p != null) { np.p.Message("SET TO {0}", value.Y/32); }
-        //            _lastGroundedLocation = value;
-        //        }
-        //    }
-        //}
+        
         public byte yaw;
         public byte pitch;
         [JsonIgnore] public AABB bounds = AABB.Make(new Vec3S32(0, 0, 0), new Vec3S32(16, 26*2, 16));
@@ -72,6 +75,20 @@ namespace NotAwesomeSurvival {
         }
         
         
+        public virtual void UpdateAir() {
+            //Player.Console.Message("Air is {0}", Air);
+
+            if (holdingBreath) {
+                Air-= 0.03125f;
+                if (Air < 0) { Air = 0; }
+            } else {
+                Air+= 0.03125f;
+                if (Air > maxAir) { Air = maxAir; }
+            }
+            if (Air == 0) {
+                TakeDamage(0.5f, DamageSource.Drowning);
+            }
+        }
         public virtual void DoNasBlockCollideActions(Position entityPos) {
             if (nl == null) { return; }
             AABB worldAABB = bounds.OffsetPosition(entityPos);

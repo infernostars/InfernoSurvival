@@ -104,7 +104,7 @@ namespace NotAwesomeSurvival {
             np.nl.SetBlock(x, y, z, Block.Air);
 
             foreach (Player pl in np.p.level.players) {
-                NassEffect.Define(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], blockColors[nasBlock.parentID]);
+                NassEffect.Define(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], blockColors[nasBlock.selfID]);
                 NassEffect.Spawn(pl, GetBreakID(), NassEffect.breakEffects[(int)nasBlock.material], x, y, z, x, y, z);
             }
             SetBreakID((byte)(GetBreakID() - 1));
@@ -307,7 +307,7 @@ namespace NotAwesomeSurvival {
                 }
                 if (millisecs < 0) { millisecs = 0; }
                 //millisecs = 0;
-                TimeSpan breakTime = TimeSpan.FromMilliseconds(millisecs);
+                TimeSpan breakTime = TimeSpan.FromMilliseconds(np.holdingBreath ? millisecs*8 : millisecs);
                 //initial calculation
 
                 //lag compensation

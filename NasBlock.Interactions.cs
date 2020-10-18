@@ -45,7 +45,7 @@ namespace NotAwesomeSurvival {
                         string desc = "%s";
                         switch (type) {
                             case NasBlock.Container.Type.Chest:
-                                desc += name+"s%S can only store %btools%S, with a limit of "+ToolLimit+".";
+                                desc += name+"s%S can store %btools%S, with a limit of "+ToolLimit+".";
                                 break;
                             case NasBlock.Container.Type.Barrel:
                             case NasBlock.Container.Type.Crate:
@@ -62,6 +62,15 @@ namespace NotAwesomeSurvival {
                 }
             }
             
+            static NasBlockExistAction WaterExistAction() {
+                return (np,nasBlock,exists,x,y,z) => {
+                    if (exists) {
+                        //give back barrel
+                        np.inventory.SetAmount(143, 1, false, false);
+                    }
+                };
+            }
+            
             static NasBlockInteraction CrateInteraction() {
                 return (np,button,action,nasBlock,x,y,z) => {
                     if (action == MouseAction.Pressed) { return; }
@@ -71,6 +80,23 @@ namespace NotAwesomeSurvival {
             
             static NasBlockExistAction ContainerExistAction() {
                 return (np,nasBlock,exists,x,y,z) => {
+                    //this is voodoo -- the question is, is it too much voodoo for the next 10 centuries for god's official temple?
+                    if (exists && nasBlock.container.type == Container.Type.Barrel) {
+                        if (
+                            NasBlock.IsPartOfSet(NasBlock.waterSet, np.nl.GetBlock(x, y+1, z)) != -1 ||
+                            NasBlock.IsPartOfSet(NasBlock.waterSet, np.nl.GetBlock(x+1, y, z)) != -1 ||
+                            NasBlock.IsPartOfSet(NasBlock.waterSet, np.nl.GetBlock(x-1, y, z)) != -1 ||
+                            NasBlock.IsPartOfSet(NasBlock.waterSet, np.nl.GetBlock(x, y, z+1)) != -1 ||
+                            NasBlock.IsPartOfSet(NasBlock.waterSet, np.nl.GetBlock(x, y, z-1)) != -1
+                           ) {
+                            np.nl.SetBlock(x, y, z, Block.Air);
+                            //water barrel
+                            np.inventory.SetAmount(643, 1, true, true);
+                            np.inventory.DisplayHeldBlock(NasBlock.blocks[143], -1, false);
+                            return;
+                        }
+                    }
+                    
                     lock (Container.locker) {
                         if (exists) {
                             Entity blockEntity = new Entity();

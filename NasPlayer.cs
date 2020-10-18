@@ -119,12 +119,12 @@ namespace NotAwesomeSurvival {
             DisplayHealth("f", "&7[", "&7]");
             if (HP == 0) {
                 if (customDeathReason.Length == 0) {
-                    customDeathReason = DamageSource.GetName(typeof(DamageSource), source).ToLower();
+                    customDeathReason = NasEntity.DeathReason(source);
                 }
                 Die(customDeathReason);
                 return true;
             }
-            p.Send(Packet.VelocityControl(0, 0.25f, 0, 0, 0, 0));
+            //p.Send(Packet.VelocityControl(0, 0.25f, 0, 0, 0, 0));
             SchedulerTask taskDisplayRed;
             taskDisplayRed = Server.MainScheduler.QueueOnce(FinishTakeDamage, this, TimeSpan.FromMilliseconds(100));
             
@@ -134,20 +134,26 @@ namespace NotAwesomeSurvival {
             NasPlayer np = (NasPlayer)task.State;
             np.DisplayHealth();
         }
-        public override void Die(string source) {
+        public override void Die(string reason) {
             hasBeenSpawned = false;
             Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
             NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
             lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(Server.mainLevel.SpawnPos.X, Server.mainLevel.SpawnPos.Y, Server.mainLevel.SpawnPos.Z);
-            p.HandleDeath(Block.Stone, p.ColoredName+"%c died from "+source+".", false, true);
+            reason = reason.Replace("@p", p.ColoredName);
+            p.HandleDeath(Block.Stone, reason, false, true);
+            p.SendCpeMessage(CpeMessageType.Announcement, "%cY O U  D I E D");
+            curFogColor = Color.Black;
+            curRenderDistance = 1;
             HP = maxHP;
+            Air = maxAir;
+            holdingBreath = false;
             //inventory = new Inventory(p);
             //inventory.Setup();
             DisplayHealth();
         }
         [JsonIgnore] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
         public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7]¼") {
-            p.SendCpeMessage(whereHealthIsDisplayed, prefix + HealthString(healthColor) + suffix);
+            p.SendCpeMessage(whereHealthIsDisplayed, OxygenString()+" "+ prefix + HealthString(healthColor) + suffix);
         }
         private string HealthString(string healthColor) {
             StringBuilder builder = new StringBuilder("&8", (int)maxHP + 6);
@@ -166,6 +172,24 @@ namespace NotAwesomeSurvival {
 
             builder.Append("&" + healthColor);
             for (int i = 0; i < (int)HP; ++i) { builder.Append("♥"); }
+
+            final = builder.ToString();
+            return final;
+        }
+        public override void UpdateAir() {
+            base.UpdateAir();
+            if (Air == Math.Floor(Air)) { DisplayHealth(); }
+        }
+        private string OxygenString() {
+            if (Air == maxAir) { return ""; }
+            if (Air == 0) { return "&r┘"; }
+            
+            StringBuilder builder = new StringBuilder("", (int)maxAir + 6);
+            string final;
+
+            for (int i = 0; i < Air; ++i) {
+                builder.Append('°');
+            }
 
             final = builder.ToString();
             return final;

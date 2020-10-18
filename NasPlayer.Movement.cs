@@ -47,7 +47,7 @@ namespace NotAwesomeSurvival {
         public void SpawnPlayerFirstTime(Level level, ref Position spawnPos, ref byte yaw, ref byte pitch) {
             if (hasBeenSpawned) { return; }
             atBorder = true;
-            if (p.Model != "|0.93023255813953488372093023255814") { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
+            if (!p.Model.EndsWith("|0.93023255813953488372093023255814")) { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
 
             
             spawnPos = new Position(location.X, location.Y, location.Z);
@@ -67,6 +67,7 @@ namespace NotAwesomeSurvival {
         [JsonIgnore] int round = 0;
         public void DoMovement(Position next, byte yaw, byte pitch) {
             UpdateHeldBlock();
+            if (canDoStuffBasedOnPosition) { UpdateAir(); }
             CheckMapCrossing(p.Pos);
             //p.Message("%gPos {0} {1} {2} %b{3}", next.FeetBlockCoords.X, next.FeetBlockCoords.Y, next.FeetBlockCoords.Z, Environment.TickCount);
             if (canDoStuffBasedOnPosition) { DoNasBlockCollideActions(next); }

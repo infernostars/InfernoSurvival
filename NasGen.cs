@@ -19,8 +19,8 @@ namespace NotAwesomeSurvival {
         public const ushort goldDepth = 50;
         public const ushort diamondDepth = 56;
         public const float coalChance = 1f;
-        public const float ironChance = 0.25f;
-        public const float goldChance = 0.125f;
+        public const float ironChance = 1f/4f;
+        public const float goldChance = 1f/8f;
         public const float diamondChance = goldChance * 0.25f;
         public static Color coalFogColor;
         public static Color ironFogColor;
@@ -268,7 +268,10 @@ namespace NotAwesomeSurvival {
                             soil = Block.Dirt;
 
                             if (lvl.FastGetBlock((ushort)x, (ushort)y, (ushort)z) == Block.Stone &&
-                                lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) != Block.Stone) {
+                                lvl.FastGetBlock((ushort)x, (ushort)(y + 1), (ushort)z) != Block.Stone
+                                && ShouldThereBeSoil(x, y, z)
+                               ) {
+                                
                                 soil = GetSoilType(x, z);
                                 if (y <= oceanHeight - 12) {
                                     soil = Block.Gravel;
@@ -285,6 +288,30 @@ namespace NotAwesomeSurvival {
                                 }
                             }
                         }
+            }
+            bool ShouldThereBeSoil(int x, int y, int z) {
+                if (
+                    IsNeighborLowEnough(x, y, z,-1, 0) ||
+                    IsNeighborLowEnough(x, y, z, 1, 0) ||
+                    IsNeighborLowEnough(x, y, z, 0,-1) ||
+                    IsNeighborLowEnough(x, y, z, 0, 1))
+                {
+                    return false;
+                }
+                return true;
+            }
+            bool IsNeighborLowEnough(int x, int y, int z, int offX, int offZ) {
+                int neighborX = x+offX;
+                int neighborZ = z+offZ;
+                if (neighborX >= lvl.Width  || neighborX < 0 ||
+                    neighborZ >= lvl.Length || neighborZ < 0
+                   ) { return false; }
+                for (int i = 0; i < 4; i++) {
+                    if (!lvl.IsAirAt((ushort)neighborX, (ushort)(y-i), (ushort)neighborZ)) {
+                        return false;
+                    }
+                }
+                return true;
             }
             void GenCaves() {
                 int width = lvl.Width, height = lvl.Height, length = lvl.Length;
@@ -430,7 +457,7 @@ namespace NotAwesomeSurvival {
                         for (int x = 0; x < lvl.Width; ++x) {
                             BlockID curBlock = lvl.FastGetBlock((ushort)x, (ushort)(y), (ushort)z);
                             if (curBlock != Block.Stone) { continue; }
-                            if (r.NextDouble() < 0.0005) {
+                            if (r.NextDouble() < 0.00025) {
                                 if (BlockExposed(x, y, z)) {
                                     if (lvl.GetBlock((ushort)x, (ushort)(y+1), (ushort)z) != Block.Stone) {
                                         continue;

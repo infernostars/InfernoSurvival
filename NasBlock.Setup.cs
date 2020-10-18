@@ -29,7 +29,8 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = 1f;
             blocks[i].disturbDelayMax = 5f;
-            blocks[i].disturbedAction = FloodAction(Block.Water);
+            blocks[i].disturbedAction = FloodAction(waterSet);
+            blocks[i].collideAction = LiquidCollideAction();
             
             
             
@@ -38,58 +39,76 @@ namespace NotAwesomeSurvival {
             const float waterDisturbDelayMin = 0.5f;
             const float waterDisturbDelayMax = 0.5f;
             
+            i = 643; //Water barrel
+            blocks[i] = new NasBlock(i, Material.Wood, DefaultDurabilities[(int)Material.Wood]*2);
+            blocks[i].childIDs = new List<BlockID>();
+            blocks[i].childIDs.Add(9);
+            
             i = 9; //still water
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
+            blocks[i].existAction = WaterExistAction();
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 1);
+            blocks[i].collideAction = LiquidCollideAction();
+            blocks[i].parentID = 643;
+            
+
             
             i = 632; //water flows
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 3);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 4);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 5);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 6);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 7);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 8);
+            blocks[i].collideAction = LiquidCollideAction();
             i++;
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = waterDisturbDelayMin;
             blocks[i].disturbDelayMax = waterDisturbDelayMax;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 9);
+            blocks[i].collideAction = LiquidCollideAction();
             i = 639; //waterfall
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = 0.2f;
             blocks[i].disturbDelayMax = 0.2f;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
+            blocks[i].collideAction = LiquidCollideAction();
             
             i = 10; //Active lava
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
             blocks[i].disturbDelayMin = 1f;
             blocks[i].disturbDelayMax = 5f;
-            blocks[i].disturbedAction = FloodAction(Block.Lava);
+            blocks[i].disturbedAction = FloodAction(new BlockID[] {Block.Lava});
             blocks[i].collideAction = LavaCollideAction();
             
             i = 11; //Lava

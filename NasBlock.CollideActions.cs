@@ -20,11 +20,11 @@ namespace NotAwesomeSurvival {
             public static NasBlockCollideAction DefaultSolidCollideAction() {
                 return (ne,nasBlock,headSurrounded,x,y,z) => {
                     if (headSurrounded) {
-                        if (ne.GetType() == typeof(NasPlayer)) {
-                            NasPlayer np = (NasPlayer)ne;
-                            np.p.Message("head surrounded @ {0} {1} {2}", x, y, z);
-                        }
-                        ne.TakeDamage(0.5f, NasEntity.DamageSource.Suffocating);
+                        //if (ne.GetType() == typeof(NasPlayer)) {
+                        //    NasPlayer np = (NasPlayer)ne;
+                        //    np.p.Message("head surrounded @ {0} {1} {2}", x, y, z);
+                        //}
+                        ne.TakeDamage(2f, NasEntity.DamageSource.Suffocating);
                         
                     }
                     
@@ -33,14 +33,22 @@ namespace NotAwesomeSurvival {
             
             public static NasBlockCollideAction LavaCollideAction() {
                 return (ne,nasBlock,headSurrounded,x,y,z) => {
-                    ne.TakeDamage(2.5f, NasEntity.DamageSource.Suffocating, "burning in lava");
+                    ne.TakeDamage(2.5f, NasEntity.DamageSource.Suffocating, "@p %cmelted in lava.");
                 };
             }
             
+            
+            public static NasBlockCollideAction LiquidCollideAction() {
+                return (ne,nasBlock,headSurrounded,x,y,z) => {
+                    if (headSurrounded) {
+                        ne.holdingBreath = true;
+                    }
+                };
+            }
             public static NasBlockCollideAction AirCollideAction() {
                 return (ne,nasBlock,headSurrounded,x,y,z) => {
                     if (headSurrounded) {
-                        //refresh oxygen
+                        ne.holdingBreath = false;
                     }
                 };
             }

@@ -9,25 +9,30 @@ using NasBlockAction = System.Action<NotAwesomeSurvival.NasLevel, int, int, int>
 namespace NotAwesomeSurvival {
 
     public partial class NasBlock {
-        static NasBlockAction FloodAction(BlockID serverBlockID) {
+        static NasBlockAction FloodAction(BlockID[] set) {
             return (nl,x,y,z) => {
-                if (CanPhysicsKillThis(nl.GetBlock(x, y-1, z)) ) {
-                    nl.SetBlock(x, y-1, z, serverBlockID);
+                if (CanInfiniteFloodKillThis(nl, x, y-1, z, set) ) {
+                    nl.SetBlock(x, y-1, z, set[LiquidInfiniteIndex]);
                     return;
                 }
-                if (CanPhysicsKillThis(nl.GetBlock(x+1, y, z)) ) {
-                    nl.SetBlock(x+1, y, z, serverBlockID);
+                if (CanInfiniteFloodKillThis(nl, x+1, y, z, set) ) {
+                    nl.SetBlock(x+1, y, z, set[LiquidInfiniteIndex]);
                 }
-                if (CanPhysicsKillThis(nl.GetBlock(x-1, y, z)) ) {
-                    nl.SetBlock(x-1, y, z, serverBlockID);
+                if (CanInfiniteFloodKillThis(nl, x-1, y, z, set) ) {
+                    nl.SetBlock(x-1, y, z, set[LiquidInfiniteIndex]);
                 }
-                if (CanPhysicsKillThis(nl.GetBlock(x, y, z+1)) ) {
-                    nl.SetBlock(x, y, z+1, serverBlockID);
+                if (CanInfiniteFloodKillThis(nl, x, y, z+1, set) ) {
+                    nl.SetBlock(x, y, z+1, set[LiquidInfiniteIndex]);
                 }
-                if (CanPhysicsKillThis(nl.GetBlock(x, y, z-1)) ) {
-                    nl.SetBlock(x, y, z-1, serverBlockID);
+                if (CanInfiniteFloodKillThis(nl, x, y, z-1, set) ) {
+                    nl.SetBlock(x, y, z-1, set[LiquidInfiniteIndex]);
                 }
             };
+        }
+        static bool CanInfiniteFloodKillThis(NasLevel nl, int x, int y, int z, BlockID[] set) {
+            BlockID here = nl.GetBlock(x, y, z);
+            if (CanPhysicsKillThis(here) || IsPartOfSet(set, here) > LiquidInfiniteIndex) { return true; }
+            return false;
         }
         
         public static BlockID[] blocksPhysicsCanKill = new BlockID[] {
