@@ -143,7 +143,9 @@ namespace NotAwesomeSurvival {
             string mapName = seed+"_"+chunkOffsetX + "," + chunkOffsetZ;
             if (File.Exists("levels/" + mapName + ".lvl")) {
                 transferInfo = new TransferInfo(p, dirX, dirZ);
-                p.HandleCommand("goto", mapName, p.DefaultCmdData);
+                CommandData data = p.DefaultCmdData;
+                data.Context = CommandContext.SendCmd;
+                p.HandleCommand("goto", mapName, data);
             } else {
                 if (NasGen.currentlyGenerating) {
                     p.Message("%cA map is already generating!");

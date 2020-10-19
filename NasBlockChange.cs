@@ -82,7 +82,7 @@ namespace NotAwesomeSurvival {
             //COPY PASTED IN 2 PLACES
             if (nasBlock.container != null &&
                 np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
-                (np.nl.blockEntities[x+" "+y+" "+z].contents != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(np.p) )
+                (np.nl.blockEntities[x+" "+y+" "+z].drop != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(np.p) )
                )
             {
                 return;
@@ -244,7 +244,7 @@ namespace NotAwesomeSurvival {
                 //COPY PASTED IN 2 PLACES
                 if (nasBlock.container != null &&
                     np.nl.blockEntities.ContainsKey(x+" "+y+" "+z) &&
-                    (np.nl.blockEntities[x+" "+y+" "+z].contents != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(p) )
+                    (np.nl.blockEntities[x+" "+y+" "+z].drop != null || !np.nl.blockEntities[x+" "+y+" "+z].CanAccess(p) )
                    )
                 {
                     np.ResetBreaking();

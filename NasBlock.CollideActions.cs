@@ -33,6 +33,9 @@ namespace NotAwesomeSurvival {
             
             public static NasBlockCollideAction LavaCollideAction() {
                 return (ne,nasBlock,headSurrounded,x,y,z) => {
+                    if (headSurrounded) {
+                        ne.holdingBreath = true;
+                    }
                     ne.TakeDamage(2.5f, NasEntity.DamageSource.Suffocating, "@p %cmelted in lava.");
                 };
             }

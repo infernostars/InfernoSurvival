@@ -39,12 +39,17 @@ namespace NotAwesomeSurvival {
             0,
             39,
             40,
-            Block.Extended|130
+            Block.Extended|130,
+            Block.FromRaw(644), Block.FromRaw(645), Block.FromRaw(646), Block.FromRaw(461)
         };
         public static bool CanPhysicsKillThis(BlockID block) {
             for (int i = 0; i < blocksPhysicsCanKill.Length; i++) {
                 if (block == blocksPhysicsCanKill[i]) { return true; }
             }
+            return false;
+        }
+        public static bool IsThisLiquid(BlockID block) {
+            if (IsPartOfSet(waterSet, block) != -1) { return true; }
             return false;
         }
         
@@ -372,6 +377,7 @@ namespace NotAwesomeSurvival {
             };
         }
         static BlockID[] grassSet = new BlockID[] { Block.Grass, Block.Extended|119, Block.Extended|129 };
+        static BlockID[] tallGrassSet = new BlockID[] { 40, Block.Extended|120, Block.Extended|130 };
         static NasBlockAction DirtBlockAction(BlockID[] grassSet, BlockID dirt) {
             return (nl,x,y,z) => {
                 BlockID aboveHere = nl.GetBlock(x, y+1, z);
@@ -389,10 +395,17 @@ namespace NotAwesomeSurvival {
                     int setIndex = IsPartOfSet(grassSet, neighbor);
                     if (setIndex == -1) { continue; }
                     nl.SetBlock(x, y, z, grassSet[setIndex], true);
+                    if (nl.GetBlock(x, y+1, z) == Block.Air && r.Next(0, 2) == 0) {
+                        nl.SetBlock(x, y+1, z, tallGrassSet[setIndex]);
+                    }
                     return;
                 }
             };
         }
+		private static Random CoordRandom(int x, int y, int z) {
+			string rndString = x+" "+y+" "+z;
+			return new Random(rndString.GetHashCode()); 
+		}
         
         
         static BlockID[] logSet = new BlockID[] { 15, 16, 17, Block.Extended|144 };
@@ -446,10 +459,18 @@ namespace NotAwesomeSurvival {
         public static BlockID[] leafSet = new BlockID[] { Block.Leaves };
         static NasBlockAction OakSaplingAction() {
             return (nl,x,y,z) => {
-                if (!IsSupported(nl, x, y, z)) { return; }
                 if (!GenericPlantSurvived(nl, x, y, z)) { return; }
                 nl.SetBlock(x, y, z, Block.Air);
                 NasTree.GenOakTree(nl, r, x, y, z, true);
+            };
+        }
+        
+        static BlockID[] wheatSet = new BlockID[] { Block.FromRaw(644), Block.FromRaw(645), Block.FromRaw(646), Block.FromRaw(461) };
+        static NasBlockAction CropAction(BlockID[] cropSet, int index) {
+            return (nl,x,y,z) => {
+                if (!CropSurvived(nl, x, y, z)) { return; }
+                if (index+1 >= cropSet.Length) { return; }
+                nl.SetBlock(x, y, z, cropSet[index+1]);
             };
         }
         
@@ -471,9 +492,17 @@ namespace NotAwesomeSurvival {
             }
             return true;
         }
+        static bool CropSurvived(NasLevel nl, int x, int y, int z) {
+            if (!IsSupported(nl, x, y, z)) { return false; }
+            if (IsPartOfSet(soilForPlants, nl.GetBlock(x, y-1, z)) == -1 ) {
+                nl.SetBlock(x, y, z, 39);
+                return false;
+            }
+            return true;
+        }
+        
         static BlockID[] soilForPlants = new BlockID[] { Block.Dirt, Block.Extended|144 };
         static bool CanPlantsLiveOn(BlockID block) {
-            
             if (IsPartOfSet(soilForPlants, block) != -1 || IsPartOfSet(grassSet, block) != -1) {
                 return true;
             }

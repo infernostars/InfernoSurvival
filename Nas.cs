@@ -123,7 +123,13 @@ namespace NotAwesomeSurvival {
             //    return;
             //}
             
-            if (cmd.CaselessEq("deleteall")) {
+            if (cmd.CaselessEq("goto") && p.Rank < LevelPermission.Operator && data.Context != CommandContext.SendCmd) {
+                p.Message("You cannot use /goto manually. It is triggered automatically when you go to map borders.");
+                p.cancelcommand = true;
+                return;
+            }
+            
+            if (cmd.CaselessEq("deleteall") && p.Rank >= LevelPermission.Operator) {
                 if (message.Length == 0) { return; }
                 string[] allMaps = LevelInfo.AllMapNames();
                 Command deleteLvl = Command.Find("deletelvl");

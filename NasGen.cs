@@ -86,7 +86,7 @@ namespace NotAwesomeSurvival {
             instance.Do();
 
             lvl.Config.Deletable = false;
-            lvl.Config.MOTD = "hax +thirdperson";
+            lvl.Config.MOTD = "-hax +thirdperson";
             lvl.Config.GrassGrow = false;
             TimeSpan timeTaken = DateTime.UtcNow.Subtract(dateStart);
             p.Message("Done in {0}", timeTaken.Shorten(true, true));

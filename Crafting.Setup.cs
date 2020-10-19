@@ -244,10 +244,25 @@ namespace NotAwesomeSurvival {
                 {  65 },
                 {  65 }
             };
+            Recipe thinPole = new Recipe(211, 4);
+            thinPole.pattern = new BlockID[,] {
+                {  75 },
+                {  75 }
+            };
             Recipe linedStone = new Recipe(477, 1);
             linedStone.pattern = new BlockID[,] {
                 {  65, 65 },
                 {  65, 65 }
+            };
+            
+
+            Recipe boulder = new Recipe(214, 4);
+            boulder.pattern = new BlockID[,] {
+                {  1 }
+            };
+            Recipe nub = new Recipe(194, 4);
+            nub.pattern = new BlockID[,] {
+                {  214 }
             };
             
             
@@ -262,7 +277,6 @@ namespace NotAwesomeSurvival {
             cobbleBrickSlab.pattern = new BlockID[,] {
                 {  4, 4, 4 }
             };
-            //133
             Recipe cobbleBrickWall = new Recipe(133, 6);
             cobbleBrickWall.pattern = new BlockID[,] {
                 {  4, 4, 4 },
@@ -403,6 +417,17 @@ namespace NotAwesomeSurvival {
             glass.pattern = new BlockID[,] {
                 { 12 }
             };
+            
+            Recipe bread = new Recipe(640, 1);
+            bread.stationType = Crafting.Station.Type.Furnace;
+            bread.shapeless = true;
+            bread.usesParentID = true;
+            bread.pattern = new BlockID[,] {
+                { 145, 145, 145 }
+            };
+            
+            
+            
         }
 
     }

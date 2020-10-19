@@ -35,6 +35,21 @@ namespace NotAwesomeSurvival {
             items = new List<Item>();
             items.Add(item);
         }
+        public Drop(Inventory inv) {
+            blockStacks = new List<BlockStack>();
+            for (int i = 0; i < inv.blocks.Length; i++) {
+                if (inv.blocks[i] == 0) { continue; }
+                blockStacks.Add(new BlockStack((ushort)i, inv.blocks[i]));
+            }
+            if (blockStacks.Count == 0) { blockStacks = null; }
+            
+            items = new List<Item>();
+            foreach (Item item in inv.items) {
+                if (item == null) { continue; }
+                items.Add(item);
+            }
+            if (items.Count == 0) { items = null; }
+        }
 
     }
     public class BlockStack {

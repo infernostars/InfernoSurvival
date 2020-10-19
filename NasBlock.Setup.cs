@@ -164,6 +164,17 @@ namespace NotAwesomeSurvival {
             i = 477; //Lined stone
             blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone]*stonebrickDurMulti, 1);
             
+            i = 211; //Thin pole
+            blocks[i] = new NasBlock(i++, Material.Stone, DefaultDurabilities[(int)Material.Stone], 1);
+            blocks[i] = new NasBlock(i++, blocks[211]);
+            blocks[i] = new NasBlock(i++, blocks[211]);
+            
+            i = 214; //Boulder
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]/2, 0);
+            i = 194; //Nub
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone]/2, 0);
+            
+            
             const float grassDelayMin = 10;
             const float grassDelayMax = 60;
             i = 2; //Grass
@@ -276,10 +287,18 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbDelayMin = leafShrivelDelayMin;
             blocks[i].disturbDelayMax = leafShrivelDelayMax;
             blocks[i].dropHandler = (dropID) => {
-                Drop leafDrop = new Drop(18, 1);
-                Drop saplingDrop = new Drop(6, 1);
-                saplingDrop.blockStacks.Add(new BlockStack(18, 1));
-                return (r.Next(0, 10) == 0) ? saplingDrop : leafDrop;
+                Drop drop = new Drop(18, 1);
+                
+                int rand = r.Next(0, 64);
+                if (rand == 0) { //1 in 64 chance of apple
+                    drop.blockStacks.Add(new BlockStack(648, 1));
+                }
+                else if (rand <= 8) { //8 in 64 chance (1 in 8 chance) of sapling
+                    drop.blockStacks.Add(new BlockStack(6, 1));
+                } else {
+                    drop = new Drop(18, 1);
+                }
+                return drop;
             };
             i = 19; //Dark leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
@@ -303,6 +322,10 @@ namespace NotAwesomeSurvival {
             blocks[i].disturbedAction = GenericPlantAction();
             i = 130; //Wet tall grass
             blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].dropHandler = (dropID) => {
+                Drop wheatDrop = new Drop(644, 1);
+                return (r.Next(0, 16) == 0) ? wheatDrop : null;
+            };
             blocks[i].disturbedAction = GenericPlantAction();
 
             i = 41; //Gold
@@ -477,6 +500,14 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, blocks[216]);
             
             
+            i = 647; //Gravestone
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone], 0);
+            blocks[i].container = new Container();
+            blocks[i].container.type = Container.Type.Gravestone;
+            blocks[i].existAction = ContainerExistAction();
+            blocks[i].interaction = ContainerInteraction();
+            
+            
 
             i = 627; //Coal ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 2, 1);
@@ -486,6 +517,52 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 2);
             i = 630; //Diamond ore
             blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Stone] + 6, 3);
+            
+            
+            //from 20 to 40 minutes (avg 30)
+            const float wheatTotalSeconds = 20f * 60f;
+            const float wheatMaxAddedSeconds = 20f * 60f;
+            const float wheatGrowMin = (wheatTotalSeconds)/3f;
+            const float wheatGrowMax = (wheatTotalSeconds + wheatMaxAddedSeconds)/3f;
+            i = 644; //Wheat (baby)
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = CropAction(wheatSet, 0);
+            blocks[i].disturbDelayMin = wheatGrowMin;
+            blocks[i].disturbDelayMax = wheatGrowMax;
+            blocks[i].dropHandler = CustomDrop(644, 1);
+            i = 645;
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = CropAction(wheatSet, 1);
+            blocks[i].disturbDelayMin = wheatGrowMin;
+            blocks[i].disturbDelayMax = wheatGrowMax;
+            blocks[i].dropHandler = CustomDrop(644, 1);
+            i = 646;
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = CropAction(wheatSet, 2);
+            blocks[i].disturbDelayMin = wheatGrowMin;
+            blocks[i].disturbDelayMax = wheatGrowMax;
+            blocks[i].dropHandler = CustomDrop(644, 1);
+            i = 461; //Wheat (full grown)
+            blocks[i] = new NasBlock(i, Material.Plant);
+            blocks[i].disturbedAction = CropAction(wheatSet, 3);
+            blocks[i].dropHandler = (dropID) => {
+                if (r.Next(0, 2) == 0) {
+                    return new Drop(145, 1);
+                }
+                return new Drop(644, r.Next(2, 5));
+                
+                //Drop drop = new Drop();
+                //drop.blockStacks = new List<BlockStack>();
+                //drop.blockStacks.Add(new BlockStack(644, r.Next(1, 4)));
+                //drop.blockStacks.Add(new BlockStack(145, 1));
+                //return drop;
+            };
+            
+            i = 145;
+            blocks[i] = new NasBlock(i, Material.Organic, 3);
+            i = 622;
+            blocks[i] = new NasBlock(i++, blocks[145]);
+            blocks[i] = new NasBlock(i++, blocks[145]);
             
             
             const float breadRestore = 1f;
@@ -498,7 +575,14 @@ namespace NotAwesomeSurvival {
             i++;
             blocks[i] = new NasBlock(i, Material.Organic, 3);
             blocks[i].interaction = EatInteraction(breadSet, 2, breadRestore);
+            
+            i = 648; //Apple
+            blocks[i] = new NasBlock(i, Material.Organic, 3);
+            blocks[i].interaction = EatInteraction(new BlockID[] { Block.FromRaw(648) } , 0, 1f);
 
+        }
+        static Func<BlockID, Drop> CustomDrop(BlockID clientBlockID, int amount) {
+            return (dropID) => { return new Drop(clientBlockID, amount); };
         }
     } //class NasBlock
 

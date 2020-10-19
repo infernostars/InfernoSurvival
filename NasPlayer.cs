@@ -86,6 +86,10 @@ namespace NotAwesomeSurvival {
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
             if (nasBlock.interaction != null) {
+                if (!canDoStuffBasedOnPosition) {
+                    if (action == MouseAction.Released) { p.Message("%cPlease wait a moment before interacting with blocks"); }
+                    return;
+                }
                 nasBlock.interaction(this, button, action, nasBlock, x, y, z);
             }
         }
@@ -136,6 +140,8 @@ namespace NotAwesomeSurvival {
         }
         public override void Die(string reason) {
             hasBeenSpawned = false;
+            TryDropGravestone();
+            
             Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
             NasEntity.SetLocation(this, Server.mainLevel.name, Server.mainLevel.SpawnPos, rot);
             lastGroundedLocation = new MCGalaxy.Maths.Vec3S32(Server.mainLevel.SpawnPos.X, Server.mainLevel.SpawnPos.Y, Server.mainLevel.SpawnPos.Z);
@@ -147,10 +153,54 @@ namespace NotAwesomeSurvival {
             HP = maxHP;
             Air = maxAir;
             holdingBreath = false;
-            //inventory = new Inventory(p);
-            //inventory.Setup();
+            
+            inventory = new Inventory(p);
+            inventory.Setup();
+            inventory.DisplayHeldBlock(NasBlock.Default, 0);
             DisplayHealth();
         }
+        void TryDropGravestone() {
+            lock (NasBlock.Container.locker) {
+                if (inventory.GetAmount(1) == 0) {
+                    p.Message("You need to have at least one stone to drop a gravestone upon death.");
+                    return;
+                }
+                inventory.SetAmount(1, -1, true, true);
+                Drop deathDrop = new Drop(inventory);
+                if (deathDrop.blockStacks == null && deathDrop.items == null) {
+                    //p.Message("You didn't drop a gravestone because you had no worldly possessions when you died.");
+                    return;
+                }
+                
+                Vec3S32 gravePos = p.Pos.FeetBlockCoords;
+                p.level.ClampPos(gravePos);
+                int x = gravePos.X;
+                int y = gravePos.Y;
+                int z = gravePos.Z;
+                
+                while (!CanPlaceGraveStone(x, y, z) ) {
+                    y++;
+                    if (y >= p.level.Height-1) {
+                        p.Message("So you died in a column of blocks that literally reaches the sky, nice job!");
+                        p.Message("No gravestone for you. Your stuff is lost forever.");
+                        return;
+                    }
+                }
+                
+                
+                //place tombstone
+                nl.SetBlock(x, y, z, Block.FromRaw(647));
+                NasBlock.Entity blockEntity = new NasBlock.Entity();
+                blockEntity.drop = deathDrop;
+                nl.blockEntities.Add(x+" "+y+" "+z, blockEntity);
+                p.Message("You dropped a gravestone at {0} {1} {2} in {3}", x, y, z, p.level.name);
+            }
+        }
+        bool CanPlaceGraveStone(int x, int y, int z) {
+            BlockID here = nl.GetBlock(x, y, z);
+            return NasBlock.CanPhysicsKillThis(here) || NasBlock.IsThisLiquid(here);
+        }
+        
         [JsonIgnore] public CpeMessageType whereHealthIsDisplayed = CpeMessageType.BottomRight2;
         public void DisplayHealth(string healthColor = "p", string prefix = "&7[", string suffix = "&7]¼") {
             p.SendCpeMessage(whereHealthIsDisplayed, OxygenString()+" "+ prefix + HealthString(healthColor) + suffix);
@@ -178,7 +228,10 @@ namespace NotAwesomeSurvival {
         }
         public override void UpdateAir() {
             base.UpdateAir();
-            if (Air == Math.Floor(Air)) { DisplayHealth(); }
+            if (Air != AirPrev && Air == Math.Floor(Air)) {
+                //p.Message("displaying health");
+                DisplayHealth();
+            }
         }
         private string OxygenString() {
             if (Air == maxAir) { return ""; }

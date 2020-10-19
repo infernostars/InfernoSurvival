@@ -31,14 +31,14 @@ namespace NotAwesomeSurvival {
                         return locker == null ? lockedBy : locker.ColoredName;
                     } }
                 public string lockedBy = "";
-                public Drop contents = null;
+                public Drop drop = null;
             }
             
             public class Container {
                 public const int ToolLimit = 9;
                 public const int BlockStackLimit = 9;
                 public static readonly object locker = new object();
-                public enum Type { Chest, Barrel, Crate }
+                public enum Type { Chest, Barrel, Crate, Gravestone }
                 public Type type;
                 public string name { get { return Type.GetName(typeof(Type), type); } }
                 public string description { get {
@@ -99,7 +99,12 @@ namespace NotAwesomeSurvival {
                     
                     lock (Container.locker) {
                         if (exists) {
-                            Entity blockEntity = new Entity();
+                            if (nasBlock.container.type == Container.Type.Gravestone) {
+                                //np.p.Message("do nothing");
+                                return;
+                            }
+                            
+                            //Entity blockEntity = new Entity(); ??????????????????????????????????????????????????????
                             if (np.nl.blockEntities.ContainsKey(x+" "+y+" "+z)) {
                                 //np.p.Message("You just overrode a spot that used to contain a chest.");
                                 np.nl.blockEntities.Remove(x+" "+y+" "+z);
@@ -138,13 +143,22 @@ namespace NotAwesomeSurvival {
                             }
                             
                             if (button == MouseButton.Left) {
+
                                 if (np.inventory.HeldItem.name == "Key") {
+                                    if (nasBlock.container.type == Container.Type.Gravestone) {
+                                        np.p.Message("You cannot lock gravestones.");
+                                    }
                                     //it's already unlocked, lock it
-                                    if (bEntity.lockedBy.Length == 0) {
+                                    else if (bEntity.lockedBy.Length == 0) {
                                         bEntity.lockedBy = np.p.name;
                                         np.p.Message("You %flock%S the {0}. Only you can access it now.", nasBlock.container.name.ToLower());
                                         return;
                                     }
+                                }
+                                
+                                if (nasBlock.container.type == Container.Type.Gravestone) {
+                                    np.p.Message("You can only right click to extract from tombstones.");
+                                    return;
                                 }
                                 
                                 if (nasBlock.container.type == Container.Type.Chest) {
@@ -167,19 +181,21 @@ namespace NotAwesomeSurvival {
                                 
                                 if (nasBlock.container.type == Container.Type.Chest) {
                                     RemoveTool(np, bEntity);
-                                } else {
+                                } else if (nasBlock.container.type == Container.Type.Barrel) {
                                     RemoveBlocks(np, bEntity);
+                                } else if (nasBlock.container.type == Container.Type.Gravestone) {
+                                    RemoveAll(np, bEntity);
                                 }
                                 return;
                             }
                             return;
                         }
-                        np.p.Message("Because the key is locked inside this chest, you can never open it. Just take it with you.");
+                        //np.p.Message("Because the key is locked inside this chest, you can never open it. Just take it with you.");
                     }
                 };
             }
             static void AddTool(NasPlayer np, Entity bEntity) {
-                if (bEntity.contents != null && bEntity.contents.items.Count >= Container.ToolLimit) {
+                if (bEntity.drop != null && bEntity.drop.items.Count >= Container.ToolLimit) {
                     np.p.Message("There can only be {0} tools at most in a chest.", Container.ToolLimit);
                     return;
                 }
@@ -187,25 +203,25 @@ namespace NotAwesomeSurvival {
                     np.p.Message("You need to select a tool to insert it.");
                     return;
                 }
-                if (bEntity.contents == null) {
-                    bEntity.contents = new Drop(np.inventory.items[np.inventory.selectedItemIndex]);
+                if (bEntity.drop == null) {
+                    bEntity.drop = new Drop(np.inventory.items[np.inventory.selectedItemIndex]);
                 } else {
-                    bEntity.contents.items.Add(np.inventory.items[np.inventory.selectedItemIndex]);
+                    bEntity.drop.items.Add(np.inventory.items[np.inventory.selectedItemIndex]);
                 }
                 np.p.Message("You put {0}%S in the chest.", np.inventory.items[np.inventory.selectedItemIndex].ColoredName);
                 np.inventory.items[np.inventory.selectedItemIndex] = null;
                 np.inventory.UpdateItemDisplay();
             }
             static void RemoveTool(NasPlayer np, Entity bEntity) {
-                if (bEntity.contents == null) {
+                if (bEntity.drop == null) {
                     np.p.Message("There's no tools to extract.");
                     return;
                 }
-                Drop taken = new Drop(bEntity.contents.items[bEntity.contents.items.Count-1]);
-                bEntity.contents.items.RemoveAt(bEntity.contents.items.Count-1);
+                Drop taken = new Drop(bEntity.drop.items[bEntity.drop.items.Count-1]);
+                bEntity.drop.items.RemoveAt(bEntity.drop.items.Count-1);
                 np.inventory.GetDrop(taken, true);
-                if (bEntity.contents.items.Count == 0) {
-                    bEntity.contents = null;
+                if (bEntity.drop.items.Count == 0) {
+                    bEntity.drop = null;
                 }
             }
             
@@ -231,12 +247,12 @@ namespace NotAwesomeSurvival {
                 if (amount > 3) { amount /= 2; }
                 
                 
-                if (bEntity.contents == null) {
+                if (bEntity.drop == null) {
                     np.inventory.SetAmount(nasBlock.parentID, -amount, true, true);
-                    bEntity.contents = new Drop(nasBlock.parentID, amount);
+                    bEntity.drop = new Drop(nasBlock.parentID, amount);
                     return;
                 }
-                foreach (BlockStack stack in bEntity.contents.blockStacks) {
+                foreach (BlockStack stack in bEntity.drop.blockStacks) {
                     //if a stack exists in the container already, add to that stack
                     if (stack.ID == nasBlock.parentID) {
                         np.inventory.SetAmount(nasBlock.parentID, -amount, true, true);
@@ -245,19 +261,19 @@ namespace NotAwesomeSurvival {
                     }
                 }
                 
-                if (bEntity.contents.blockStacks.Count >= Container.BlockStackLimit) {
+                if (bEntity.drop.blockStacks.Count >= Container.BlockStackLimit) {
                     p.Message("It can't contain more than {0} stacks of blocks.", Container.BlockStackLimit);
                     return;
                 }
                 np.inventory.SetAmount(nasBlock.parentID, -amount, true, true);
-                bEntity.contents.blockStacks.Add(new BlockStack(nasBlock.parentID, amount));
+                bEntity.drop.blockStacks.Add(new BlockStack(nasBlock.parentID, amount));
                 
                 
             }
             static void RemoveBlocks(NasPlayer np, Entity bEntity) {
                 Player p = np.p;
-                if (bEntity.contents != null && bEntity.contents.blockStacks != null) {
-                    if (bEntity.contents.blockStacks.Count == 0) {
+                if (bEntity.drop != null && bEntity.drop.blockStacks != null) {
+                    if (bEntity.drop.blockStacks.Count == 0) {
                         p.Message("%cTHERE ARE 0 BLOCK STACKS INSIDE WARNING THIS SHOULD NEVER HAPPEN IT SHOULD BE NULL INSTEAD");
                         return;
                     }
@@ -266,7 +282,7 @@ namespace NotAwesomeSurvival {
                     
                     BlockID clientBlockID = p.ConvertBlock(p.RawHeldBlock);
                     NasBlock nasBlock = NasBlock.Get(clientBlockID);
-                    foreach (BlockStack stack in bEntity.contents.blockStacks) {
+                    foreach (BlockStack stack in bEntity.drop.blockStacks) {
                         //if there's a stack in the container that matches what we're holding
                         if (stack.ID == nasBlock.parentID) {
                             //p.Message("found you");
@@ -276,7 +292,7 @@ namespace NotAwesomeSurvival {
                     }
                     if (bs == null) {
                         //p.Message("we didn't find a stack that matches held block, take the last one");
-                        bs = bEntity.contents.blockStacks[bEntity.contents.blockStacks.Count-1];
+                        bs = bEntity.drop.blockStacks[bEntity.drop.blockStacks.Count-1];
                     }
 
                     int amount = bs.amount;
@@ -284,38 +300,45 @@ namespace NotAwesomeSurvival {
                     
                     np.inventory.SetAmount(bs.ID, amount, true, true);
                     if (amount >= bs.amount) {
-                        bEntity.contents.blockStacks.Remove(bs);
+                        bEntity.drop.blockStacks.Remove(bs);
                     } else {
                         bs.amount -= amount;
                     }
                     
-                    if (bEntity.contents.blockStacks.Count == 0) {
-                        bEntity.contents = null;
+                    if (bEntity.drop.blockStacks.Count == 0) {
+                        bEntity.drop = null;
                     }
                     return;
                 }
                 p.Message("There's no blocks to extract.");
             }
             
-            
+            static void RemoveAll(NasPlayer np, Entity bEntity) {
+                Player p = np.p;
+                if (bEntity.drop != null) {
+                    bEntity.drop = np.inventory.GetDrop(bEntity.drop);
+                    return;
+                }
+                p.Message("There's nothing to extract.");
+            }
             
             
             
             static void CheckContents(NasPlayer np, NasBlock nb, Entity blockEntity) {
-                if (blockEntity.contents == null) {
+                if (blockEntity.drop == null) {
                     np.p.Message("There's nothing inside.");
                 }
                 else {
-                    if (blockEntity.contents.items != null) {
-                        np.p.Message("There's {0} tool{1} inside.", blockEntity.contents.items.Count, blockEntity.contents.items.Count == 1 ? "" : "s");
+                    if (blockEntity.drop.items != null) {
+                        np.p.Message("There's {0} tool{1} inside.", blockEntity.drop.items.Count, blockEntity.drop.items.Count == 1 ? "" : "s");
                     }
-                    if (blockEntity.contents.blockStacks != null) {
-                        foreach (BlockStack bs in blockEntity.contents.blockStacks) {
+                    if (blockEntity.drop.blockStacks != null) {
+                        foreach (BlockStack bs in blockEntity.drop.blockStacks) {
                             np.p.Message("There's %f{0} {1}%S inside.", bs.amount, NasBlock.blocks[bs.ID].GetName(np.p));
                         }
                     }
                 }
-                
+                if (nb.container.type == Container.Type.Gravestone) { return; }
                 np.p.Message("%r(%fi%r)%S This {0} is %f{1}%S by you.", nb.container.name.ToLower(), blockEntity.lockedBy.Length > 0 ? "locked" : "not locked");
             }
             

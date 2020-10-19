@@ -32,6 +32,7 @@ namespace NotAwesomeSurvival {
         public float HP;
         public const float maxHP = 10;
         public float Air;
+        [JsonIgnore] public float AirPrev;
         public const float maxAir = 10;
         public bool holdingBreath = false;
         public string levelName;
@@ -77,7 +78,7 @@ namespace NotAwesomeSurvival {
         
         public virtual void UpdateAir() {
             //Player.Console.Message("Air is {0}", Air);
-
+            AirPrev = Air;
             if (holdingBreath) {
                 Air-= 0.03125f;
                 if (Air < 0) { Air = 0; }
