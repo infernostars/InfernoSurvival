@@ -157,7 +157,7 @@ namespace NotAwesomeSurvival {
                                 }
                                 
                                 if (nasBlock.container.type == Container.Type.Gravestone) {
-                                    np.p.Message("You can only right click to extract from tombstones.");
+                                    np.p.Message("You can right click to extract from tombstones.");
                                     return;
                                 }
                                 
@@ -352,7 +352,7 @@ namespace NotAwesomeSurvival {
                 return (np,nasBlock,exists,x,y,z) => {
                     if (exists) {
                         np.p.Message("You placed a %b{0}%S!", nasBlock.station.name);
-                        np.p.Message("Click it with nothing held (press G) to craft.");
+                        np.p.Message("Click to craft.");
                         np.p.Message("Right click to auto-replace recipe.");
                         np.p.Message("Left click for one-and-done.");
                         nasBlock.station.ShowArea(np, x, y, z, Color.White);

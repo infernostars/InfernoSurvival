@@ -173,6 +173,20 @@ namespace NotAwesomeSurvival {
                 { 17, 17 }
             };
             
+            Recipe board = new Recipe(168, 6);
+            board.usesParentID = true;
+            board.pattern = new BlockID[,] {
+                {  56, 56, 56 }
+            };
+            Recipe boardSideways = new Recipe(524, 6);
+            boardSideways.usesParentID = true;
+            boardSideways.pattern = new BlockID[,] {
+                {  182 },
+                {  182 },
+                {  182 }
+            };
+            
+            
             //chest
             Recipe chest = new Recipe(216, 1);
             chest.pattern = new BlockID[,] {
@@ -359,7 +373,7 @@ namespace NotAwesomeSurvival {
                 {  49, 49 }
             };
 
-            //old iron
+            
             Recipe iron = new Recipe(42, 1);
             iron.stationType = Crafting.Station.Type.Furnace;
             iron.shapeless = true;
@@ -368,6 +382,7 @@ namespace NotAwesomeSurvival {
                 {  627, 627, 627 },
                 {  627, 627, 627 },
             };
+            //old iron
             Recipe oldIron = new Recipe(148, 1);
             oldIron.stationType = Crafting.Station.Type.Furnace;
             oldIron.shapeless = true;
@@ -393,6 +408,21 @@ namespace NotAwesomeSurvival {
                 {  149, 148,  0  }
             };
             
+            //i = 159; //Iron fence-WE
+            Recipe ironFence = new Recipe(159, 12);
+            ironFence.pattern = new BlockID[,] {
+                {  148, 148, 148 },
+                {  148, 148, 148 }
+            };
+            //i = 161; //Iron cage
+            Recipe ironCage = new Recipe(161, 4);
+            ironCage.usesParentID = true;
+            ironCage.pattern = new BlockID[,] {
+                {    0, 159,   0 },
+                {  159,   0, 159 },
+                {    0, 159,   0 }
+            };
+            
             
             Recipe gold = new Recipe(41, 1);
             gold.stationType = Crafting.Station.Type.Furnace;
@@ -411,13 +441,42 @@ namespace NotAwesomeSurvival {
                 {  239, 239, 239 },
             };
 
+            //glass
             Recipe glass = new Recipe(20, 1);
             glass.stationType = Crafting.Station.Type.Furnace;
             glass.shapeless = true;
             glass.pattern = new BlockID[,] {
                 { 12 }
             };
+            Recipe glassPane = new Recipe(136, 6);
+            glassPane.pattern = new BlockID[,] {
+                {  20, 20, 20 },
+                {  20, 20, 20 }
+            };
             
+            Recipe oldGlass = new Recipe(203, 1);
+            oldGlass.pattern = new BlockID[,] {
+                { 57 },
+                { 20 }
+            };
+            Recipe oldGlassPane = new Recipe(209, 6);
+            oldGlassPane.pattern = new BlockID[,] {
+                {  203, 203, 203 },
+                {  203, 203, 203 }
+            };
+            
+            Recipe newGlass = new Recipe(471, 1);
+            newGlass.pattern = new BlockID[,] {
+                { 150 },
+                {  20 }
+            };
+            Recipe newGlassPane = new Recipe(472, 6);
+            newGlassPane.pattern = new BlockID[,] {
+                {  471, 471, 471 },
+                {  471, 471, 471 }
+            };
+            
+            //bread
             Recipe bread = new Recipe(640, 1);
             bread.stationType = Crafting.Station.Type.Furnace;
             bread.shapeless = true;
@@ -427,6 +486,10 @@ namespace NotAwesomeSurvival {
             };
             
             
+            Recipe leavesSlab = new Recipe(105, 6);
+            leavesSlab.pattern = new BlockID[,] {
+                {  18, 18, 18 }
+            };
             
         }
 

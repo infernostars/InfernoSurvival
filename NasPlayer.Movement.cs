@@ -83,7 +83,7 @@ namespace NotAwesomeSurvival {
             }
             set {
                 //if (p != null) { p.Message("canDoStuffBasedOnPosition: {0}", value); }
-                if (!value) { datePositionCheckingIsAllowed = DateTime.UtcNow.AddMilliseconds(2000+p.Ping.AveragePing()); }
+                if (!value) { datePositionCheckingIsAllowed = DateTime.UtcNow.AddMilliseconds(1000+p.Ping.AveragePing()); }
             }
         }
                 

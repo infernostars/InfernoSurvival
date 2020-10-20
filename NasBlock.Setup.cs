@@ -246,6 +246,16 @@ namespace NotAwesomeSurvival {
             i = 94; //Fence (wood)
             blocks[i] = new NasBlock(i++, Material.Wood);
             blocks[i] = new NasBlock(i, blocks[94]);
+            
+            i = 168; //Wood board
+            blocks[i] = new NasBlock(i++, Material.Wood);
+            i = 524; //Board (sideways)
+            blocks[i] = new NasBlock(i++, Material.Wood);
+            blocks[i] = new NasBlock(i++, blocks[524]);
+            blocks[i] = new NasBlock(i++, blocks[524]);
+            blocks[i] = new NasBlock(i++, blocks[524]);
+            
+            
 
             i = 14; //Gnarly (Log)
             blocks[i] = new NasBlock(i, Material.Wood);
@@ -300,11 +310,31 @@ namespace NotAwesomeSurvival {
                 }
                 return drop;
             };
+            i = 105; //Leaves slab
+            blocks[i] = new NasBlock(i, Material.Leaves);
+            
+            
             i = 19; //Dark leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
 
             i = 20; //Glass
             blocks[i] = new NasBlock(i, Material.Glass);
+            i = 136; //Glass pane
+            blocks[i] = new NasBlock(i++, Material.Glass);
+            blocks[i] = new NasBlock(i, blocks[136]);
+            
+            i = 203; //Old glass
+            blocks[i] = new NasBlock(i, Material.Glass);
+            i = 209; //Old pane
+            blocks[i] = new NasBlock(i++, Material.Glass);
+            blocks[i] = new NasBlock(i, blocks[209]);
+            
+            i = 471; //New glass
+            blocks[i] = new NasBlock(i, Material.Glass);
+            i = 472; //New pane
+            blocks[i] = new NasBlock(i++, Material.Glass);
+            blocks[i] = new NasBlock(i, blocks[472]);
+            
 
             i = 37; //Dandelion
             blocks[i] = new NasBlock(i, Material.Plant);
@@ -345,6 +375,15 @@ namespace NotAwesomeSurvival {
             blocks[i] = new NasBlock(i++, blocks[294]);
             blocks[i] = new NasBlock(i++, blocks[294]);
             blocks[i] = new NasBlock(i, blocks[294]);
+            
+            i = 159; //Iron fence-WE
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
+            blocks[i].collideAction = AirCollideAction();
+            i++;
+            blocks[i] = new NasBlock(i, blocks[159]);
+            i = 161; //Iron cage
+            blocks[i] = new NasBlock(i, Material.Stone, DefaultDurabilities[(int)Material.Metal], 1);
+            blocks[i].collideAction = AirCollideAction();
             
 
             i = 44; //Concrete slab-D

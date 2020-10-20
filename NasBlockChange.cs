@@ -5,6 +5,7 @@ using MCGalaxy.Blocks;
 using MCGalaxy.Events.PlayerEvents;
 using BlockID = System.UInt16;
 using MCGalaxy.Tasks;
+using MCGalaxy.DB;
 
 namespace NotAwesomeSurvival {
 
@@ -101,6 +102,7 @@ namespace NotAwesomeSurvival {
             if (nasBlock.existAction != null) {
                 nasBlock.existAction(np, nasBlock, false, x, y, z);
             }
+            np.p.level.BlockDB.Cache.Add(np.p, x, y, z, BlockDBFlags.ManualPlace, here, Block.Air);
             np.nl.SetBlock(x, y, z, Block.Air);
 
             foreach (Player pl in np.p.level.players) {
