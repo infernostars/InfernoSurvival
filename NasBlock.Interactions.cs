@@ -190,7 +190,11 @@ namespace NotAwesomeSurvival {
                             }
                             return;
                         }
-                        //np.p.Message("Because the key is locked inside this chest, you can never open it. Just take it with you.");
+                        if (nasBlock.container.type != Container.Type.Gravestone) {
+                            np.p.Message("The {0} you're trying to access got looted and destroyed, but replaced because the thief got undone.",
+                                         nasBlock.container.name.ToLower() );
+                            np.p.Message("The stuff inside is lost, but you can make it functional again by %cdeleting%S then %breplacing%S it.");
+                        }
                     }
                 };
             }

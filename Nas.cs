@@ -141,6 +141,17 @@ namespace NotAwesomeSurvival {
                 p.cancelcommand = true;
                 return;
             }
+            
+            if (cmd.CaselessEq("color")) {
+                if (message.Length == 0) { return; }
+                string[] args = message.Split(' ');
+                string color = args[args.Length-1];
+                if (Matcher.FindColor(p, color) == "&h") {
+                    p.Message("That color isn't allowed in names.");
+                    p.cancelcommand = true; return;
+                }
+                return;
+            }
 
 
             if (!cmd.CaselessEq("nas")) { return; }
@@ -181,7 +192,7 @@ namespace NotAwesomeSurvival {
         static void OnPlayerDisconnect(Player p, string reason) {
             NasPlayer np = (NasPlayer)p.Extras[PlayerKey];
             NasPlayer.SetLocation(np, p.level.name, p.Pos, p.Rot);
-            np.hasBeenSpawned = false;
+            //np.hasBeenSpawned = false;
             string jsonString;
             jsonString = JsonConvert.SerializeObject(np, Formatting.Indented);
             File.WriteAllText(GetSavePath(p), jsonString);

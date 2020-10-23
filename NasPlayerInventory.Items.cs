@@ -87,7 +87,12 @@ namespace NotAwesomeSurvival {
             slotToMoveTo = -1;
         }
         public void MoveItemBarSelection(int direction) {
-
+            NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
+            if (!np.hasBeenSpawned) {
+                p.Message("%chasBeenSpawned is %cfalse%S, this shouldn't happen if you didn't just die.");
+                p.Message("%bPlease report to Goodly what you were doing before this happened");
+            }
+            
             Item heldItemBeforeScrolled = HeldItem;
 
             deleting = false;
@@ -99,9 +104,10 @@ namespace NotAwesomeSurvival {
 
             if (heldItemBeforeScrolled != HeldItem) {
                 //only reset breaking if they actually are holding a different item than before
-                NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
+                
                 np.ResetBreaking();
                 NassEffect.UndefineEffect(p, NasBlockChange.BreakMeterID);
+                
             }
 
         }

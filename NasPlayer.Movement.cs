@@ -21,10 +21,8 @@ namespace NotAwesomeSurvival {
         }
 
         static void OnPlayerSpawning(Player p, ref Position pos, ref byte yaw, ref byte pitch, bool respawning) {
-            //if (respawning) { return; }
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
             np.nl = NasLevel.Get(p.level.name);
-            //p.Message("Your NasLevel is named {0}", np.nl == null ? "NULL" : np.nl.lvl.name);
             np.SpawnPlayer(p.level, ref pos, ref yaw, ref pitch);
         }
 
@@ -35,8 +33,12 @@ namespace NotAwesomeSurvival {
             if (!hasBeenSpawned) { SpawnPlayerFirstTime(level, ref spawnPos, ref yaw, ref pitch); return; }
 
             if (transferInfo != null) {
+                
                 transferInfo.CalcNewPos();
                 spawnPos = transferInfo.posBeforeMapChange;
+                spawnPos.X = spawnPos.BlockX * 32 + 16;
+                spawnPos.Z = spawnPos.BlockZ * 32 + 16;
+                
                 yaw = transferInfo.yawBeforeMapChange;
                 pitch = transferInfo.pitchBeforeMapChange;
                 
@@ -49,18 +51,24 @@ namespace NotAwesomeSurvival {
             atBorder = true;
             if (!p.Model.EndsWith("|0.93023255813953488372093023255814")) { Command.Find("model").Use(p, "|0.93023255813953488372093023255814"); }
 
-            
             spawnPos = new Position(location.X, location.Y, location.Z);
             yaw = this.yaw;
             pitch = this.pitch;
             Logger.Log(LogType.Debug, "Teleporting " + p.name + "!");
 
             if (level.name != levelName) {
+                Player.Console.Message("{0}: trying to use /goto to move to the map they logged out in", p.name.ToUpper());
                 //goto will call OnPlayerSpawning again to complete the spawn
-                p.HandleCommand("goto", levelName, p.DefaultCmdData);
+                CommandData data = p.DefaultCmdData;
+                data.Context = CommandContext.SendCmd;
+                p.HandleCommand("goto", levelName, data);
                 return;
             }
+            
             hasBeenSpawned = true;
+            //p.Message("hasBeenSpawned set to {0}", hasBeenSpawned);
+            Player.Console.Message("{0}: hasBeenSpawned set to {1}", p.name.ToUpper(), hasBeenSpawned);
+            
         }
         
         
@@ -78,12 +86,16 @@ namespace NotAwesomeSurvival {
         [JsonIgnore] DateTime datePositionCheckingIsAllowed = DateTime.MinValue;
         [JsonIgnore] bool canDoStuffBasedOnPosition {
             get {
-                if (DateTime.UtcNow >= datePositionCheckingIsAllowed) { return true; }
+                if (DateTime.UtcNow >= datePositionCheckingIsAllowed) {
+                    //p.Message("canDoStuffBasedOnPosition true");
+                    return true;
+                }
+                //p.Message("canDoStuffBasedOnPosition false");
                 return false;
             }
             set {
                 //if (p != null) { p.Message("canDoStuffBasedOnPosition: {0}", value); }
-                if (!value) { datePositionCheckingIsAllowed = DateTime.UtcNow.AddMilliseconds(1000+p.Ping.AveragePing()); }
+                if (!value) { datePositionCheckingIsAllowed = DateTime.UtcNow.AddMilliseconds(2000+p.Ping.HighestPing()); }
             }
         }
                 
@@ -93,6 +105,7 @@ namespace NotAwesomeSurvival {
             float fallDamageMultiplier = 1;
             if (Collision.TouchesGround(p.level, bounds, below, out fallDamageMultiplier)) {
                 float fallHeight = lastGroundedLocation.Y - next.Y;
+                if (!canDoStuffBasedOnPosition && fallHeight > 0 && !hasBeenSpawned) { p.Message("trying to take fall damage but cant"); }
                 if (fallHeight > 0 && canDoStuffBasedOnPosition) {
                     fallHeight /= 32f;
                     fallHeight-= 4;

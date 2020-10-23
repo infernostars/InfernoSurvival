@@ -37,7 +37,7 @@ namespace NotAwesomeSurvival {
         }
 
         public Inventory inventory;
-        public bool hasBeenSpawned;
+        [JsonIgnore] public bool hasBeenSpawned = false;
 
         [JsonIgnore] public Color targetFogColor = Color.White;
         [JsonIgnore] public Color curFogColor = Color.White;
@@ -49,7 +49,7 @@ namespace NotAwesomeSurvival {
             HP = 10;
             Air = 10;
             inventory = new Inventory(p);
-            hasBeenSpawned = false;
+            //hasBeenSpawned = false;
         }
         public void SetPlayer(Player p) {
             Player.Console.Message("setting player in inventory");
@@ -81,7 +81,6 @@ namespace NotAwesomeSurvival {
     			    //p.Message("it intersects");
     			}
             }
-
             BlockID serverBlockID = p.level.GetBlock(x, y, z);
             BlockID clientBlockID = p.ConvertBlock(serverBlockID);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
@@ -101,7 +100,7 @@ namespace NotAwesomeSurvival {
         public override bool CanTakeDamage(DamageSource source) {
             //return false;
             if (p.invincible) { return false; }
-            if (!hasBeenSpawned) { p.Message("hasnt been spawned"); return false; }
+            if (!hasBeenSpawned) { p.Message("this is a bug, please quit and rejoin to fix(?)"); return false; }
             
             if (source == DamageSource.Suffocating) {
                 TimeSpan timeSinceSuffocation = DateTime.UtcNow.Subtract(lastSuffocationDate);
@@ -140,6 +139,8 @@ namespace NotAwesomeSurvival {
         }
         public override void Die(string reason) {
             hasBeenSpawned = false;
+            //p.Message("hasBeenSpawned set to {0}", hasBeenSpawned);
+            Player.Console.Message("{0}: hasBeenSpawned set to {1}", p.name.ToUpper(), hasBeenSpawned);
             TryDropGravestone();
             
             Orientation rot = new Orientation(Server.mainLevel.rotx, Server.mainLevel.roty);
@@ -161,11 +162,11 @@ namespace NotAwesomeSurvival {
         }
         void TryDropGravestone() {
             lock (NasBlock.Container.locker) {
-                if (inventory.GetAmount(1) == 0) {
-                    p.Message("You need to have at least one stone to drop a gravestone upon death.");
-                    return;
-                }
-                inventory.SetAmount(1, -1, true, true);
+                //if (inventory.GetAmount(1) == 0) {
+                //    p.Message("You need to have at least one stone to drop a gravestone upon death.");
+                //    return;
+                //}
+                //inventory.SetAmount(1, -1, true, true);
                 Drop deathDrop = new Drop(inventory);
                 if (deathDrop.blockStacks == null && deathDrop.items == null) {
                     //p.Message("You didn't drop a gravestone because you had no worldly possessions when you died.");

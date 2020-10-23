@@ -424,6 +424,9 @@ namespace NotAwesomeSurvival {
                     return;
                 }
                 nl.SetBlock(x, y, z, Block.Air);
+                if (r.Next(0, 384) == 0 && CanPhysicsKillThis(nl.GetBlock(x, y-1, z)) ) {
+                    nl.SetBlock(x, y-1, z, Block.FromRaw(648));
+                }
             };
         }
         static void IsThereLog(NasLevel nl, int x, int y, int z, BlockID leaf, int iteration, ref bool canLive) {

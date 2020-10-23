@@ -22,6 +22,8 @@ namespace NotAwesomeSurvival {
 
             Default = new NasBlock(0, Material.Earth);
             Default.collideAction = AirCollideAction();
+            
+            const float fallSpeed = 0.3f;
 
             BlockID i;
             
@@ -99,8 +101,8 @@ namespace NotAwesomeSurvival {
             blocks[i].collideAction = LiquidCollideAction();
             i = 639; //waterfall
             blocks[i] = new NasBlock(i, Material.Liquid, Int32.MaxValue);
-            blocks[i].disturbDelayMin = 0.2f;
-            blocks[i].disturbDelayMax = 0.2f;
+            blocks[i].disturbDelayMin = fallSpeed;
+            blocks[i].disturbDelayMax = fallSpeed;
             blocks[i].disturbedAction = LimitedFloodAction(waterSet, 2);
             blocks[i].collideAction = LiquidCollideAction();
             
@@ -279,18 +281,18 @@ namespace NotAwesomeSurvival {
 
             i = 12; //Sand
             blocks[i] = new NasBlock(i, Material.Earth, 3);
-            blocks[i].disturbDelayMin = 0.2f;
-            blocks[i].disturbDelayMax = 0.2f;
+            blocks[i].disturbDelayMin = fallSpeed;
+            blocks[i].disturbDelayMax = fallSpeed;
             blocks[i].disturbedAction = FallingBlockAction(Block.Sand);
 
             i = 13; //Gravel
             blocks[i] = new NasBlock(i, Material.Earth);
-            blocks[i].disturbDelayMin = 0.2f;
-            blocks[i].disturbDelayMax = 0.2f;
+            blocks[i].disturbDelayMin = fallSpeed;
+            blocks[i].disturbDelayMax = fallSpeed;
             blocks[i].disturbedAction = FallingBlockAction(Block.Gravel);
 
-            const float leafShrivelDelayMin = 0.5f;
-            const float leafShrivelDelayMax = 1f;
+            const float leafShrivelDelayMin = 1f;
+            const float leafShrivelDelayMax = 1.5f;
             i = 18; //Leaves
             blocks[i] = new NasBlock(i, Material.Leaves);
             blocks[i].disturbedAction = LeafBlockAction(logSet, Block.Leaves);
@@ -299,11 +301,8 @@ namespace NotAwesomeSurvival {
             blocks[i].dropHandler = (dropID) => {
                 Drop drop = new Drop(18, 1);
                 
-                int rand = r.Next(0, 64);
-                if (rand == 0) { //1 in 64 chance of apple
-                    drop.blockStacks.Add(new BlockStack(648, 1));
-                }
-                else if (rand <= 8) { //8 in 64 chance (1 in 8 chance) of sapling
+                int rand = r.Next(0, 8);
+                if (rand == 0) { //16 in 128 chance (1 in 8 chance) of sapling
                     drop.blockStacks.Add(new BlockStack(6, 1));
                 } else {
                     drop = new Drop(18, 1);
@@ -617,6 +616,9 @@ namespace NotAwesomeSurvival {
             
             i = 648; //Apple
             blocks[i] = new NasBlock(i, Material.Organic, 3);
+            blocks[i].disturbDelayMin = fallSpeed;
+            blocks[i].disturbDelayMax = fallSpeed;
+            blocks[i].disturbedAction = FallingBlockAction(Block.FromRaw(i));
             blocks[i].interaction = EatInteraction(new BlockID[] { Block.FromRaw(648) } , 0, 1f);
 
         }

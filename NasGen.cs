@@ -355,7 +355,7 @@ namespace NotAwesomeSurvival {
 
                             if (value > threshold) {
                                 if (y <= 4) {
-                                    lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.StillLava);
+                                    lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Lava);
                                 } else {
                                     lvl.SetTile((ushort)x, (ushort)(y), (ushort)z, Block.Air);
                                 }

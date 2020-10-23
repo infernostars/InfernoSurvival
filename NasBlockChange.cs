@@ -111,6 +111,11 @@ namespace NotAwesomeSurvival {
             }
             SetBreakID((byte)(GetBreakID() - 1));
             np.justBrokeOrPlaced = true;
+            
+            if (!np.hasBeenSpawned) {
+                np.p.Message("%chasBeenSpawned is %cfalse%S, this shouldn't happen if you didn't just die.");
+                np.p.Message("%bPlease report to Goodly what you were doing before this happened");
+            }
         }
         public static void CancelPlacedBlock(Player p, ushort x, ushort y, ushort z, ref bool cancel) {
             cancel = true;
@@ -213,7 +218,8 @@ namespace NotAwesomeSurvival {
         ushort yaw, ushort pitch,
         byte entity, ushort x, ushort y, ushort z,
         TargetBlockFace face) {
-
+            if (!p.agreed) { p.Message("You need to read and agree to the %b/rules%S to play"); return; }
+            
             NasPlayer np = (NasPlayer)p.Extras[Nas.PlayerKey];
 
             if (action == MouseAction.Released) {
