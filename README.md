@@ -42,8 +42,7 @@ If you have logs, you can place drawers to craft with. Logs and drawers are a sh
 **What has -not- been implemented, and probably never will be unless someone else steps in.**
 * Actual pvp
 * Mobs
-* A bunch of other stuff probably
-Please don't bug me for new features.
+* A bunch of other stuff probably. Please don't bug me for new features.
 
 **Known issues (with unknown causes):**
 * Rarely, storage containers will get erased.
