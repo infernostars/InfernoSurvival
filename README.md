@@ -15,7 +15,7 @@ You will also need to use the "infid" version of MCGalaxy_.dll which allows for 
 To install:
 1. Run your server once to generate the folders, if you haven't already.
 2. Shut down your server.
-3. Extract the contents of *plugin.zip* into the *plugins* folder.
+3. Put every file from *assets.zip* into the *plugins* folder. Just the files inside! You should not end up with an "assets" folder inside *plugins*.
 4. Run your server again. NAS will generate a starting world, then do one final restart automatically.
 
 If this works without any errors, you're done!
