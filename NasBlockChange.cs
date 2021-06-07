@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using MCGalaxy;
 using MCGalaxy.Blocks;
@@ -14,10 +15,20 @@ namespace NotAwesomeSurvival {
 
 
         static Color[] blockColors = new Color[Block.MaxRaw + 1];
-        public static void Setup() {
+        const string terrainImageName = "terrain.png";
+        
+        public static bool Setup() {
+            if (File.Exists("plugins/" + terrainImageName)) {
+                File.Move("plugins/" + terrainImageName, Nas.Path + terrainImageName);
+            }
+            if (!File.Exists(Nas.Path + terrainImageName)) {
+                Player.Console.Message("Could not locate {0} (needed for block particle colors)", terrainImageName);
+                return false;
+            }
+            
             if (breakScheduler == null) breakScheduler = new Scheduler("BlockBreakScheduler");
             Bitmap terrain;
-            terrain = new Bitmap(Nas.Path + "terrain.png");
+            terrain = new Bitmap(Nas.Path + terrainImageName);
             terrain = new Bitmap(terrain, terrain.Width / 16, terrain.Height / 16);
             //terrain.Save("plugins/nas/smolTerrain.png", System.Drawing.Imaging.ImageFormat.Png);
 
@@ -35,6 +46,7 @@ namespace NotAwesomeSurvival {
                 //Logger.Log(LogType.Debug, "success color block "+blockID+".");
             }
             terrain.Dispose();
+            return true;
         }
 
         const string ClickableBlocksKey = "__clickableBlocks_";

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using Newtonsoft.Json;
 using MCGalaxy;
 using MCGalaxy.Events.PlayerEvents;
@@ -23,7 +24,7 @@ namespace NotAwesomeSurvival {
         public override string name { get { return "nas"; } }
         public override string MCGalaxy_Version { get { return "1.9.2.5"; } }
         public override string creator { get { return "goodly"; } }
-
+        const string textureURL = "https://dl.dropbox.com/s/xum0t6ld9g489ax/nas.zip";
         const string KeyPrefix = "nas_";
         public const string PlayerKey = KeyPrefix + "NasPlayer";
         public const string Path = "plugins/nas/";
@@ -33,13 +34,65 @@ namespace NotAwesomeSurvival {
         }
 
         public override void Load(bool startup) {
+            if (Block.Props.Length != 1024) { //check for TEN_BIT_BLOCKS. Value is 512 on a default instance of MCGalaxy.
+                Player.Console.Message("NAS: FAILED to load plugin. In order to run NAS, you must be using a version of MCGalaxy which allows 767 blocks.");
+                Player.Console.Message("NAS: You can find instructions for 767 blocks here: https://github.com/UnknownShadow200/MCGalaxy/tree/master/Uploads (infid)");
+                return;
+            }
+            if (File.Exists("plugins/Newtonsoft.Json.dll")) {
+                Player.Console.Message("json exists in plugins");
+                Thread.Sleep(20 * 1000);
+                if (!File.Exists("Newtonsoft.Json.dll")) {
+                    Player.Console.Message("json does not exist in server");
+                    File.Move("plugins/Newtonsoft.Json.dll", "Newtonsoft.Json.dll");
+                }
+                else {
+                    Player.Console.Message("deleting json from plugins because it already exists in server");
+                    File.Delete("plugins/Newtonsoft.Json.dll");
+                }
+            }
+            
+            if (!Directory.Exists(Nas.Path)) {
+                Directory.CreateDirectory(Nas.Path);
+            }
+            if (!Directory.Exists(NasLevel.Path)) {
+                Directory.CreateDirectory(NasLevel.Path);
+            }
+            if (!Directory.Exists(Nas.SavePath)) {
+                Directory.CreateDirectory(Nas.SavePath);
+            }
+            if (!Directory.Exists(NassEffect.Path)) {
+                Directory.CreateDirectory(NassEffect.Path);
+            }
+            
+            if (File.Exists("plugins/global.json")) {
+                Server.Config.DefaultTexture = textureURL; //just do it here so it only happens once... allowing the user to change it later
+                Server.Config.EdgeLevel = 60;
+                Server.Config.SidesOffset = -200;
+                Server.Config.CloudsHeight = 200;
+                Server.Config.MaxFogDistance = 512;
+                Server.Config.SkyColor = "#1489FF";
+                Server.Config.ShadowColor = "#888899";
+                SrvProperties.Save();
+                
+                const string blockDefFile = "blockdefs/global.json";
+                if (File.Exists(blockDefFile)) { File.Move(blockDefFile, "blockdefs/global_backup_from_before_nas_replaced_it.json"); }
+                File.Move("plugins/global.json", blockDefFile);
+            }
+            if (File.Exists("plugins/default.txt")) {
+                const string blockPropsFile = "blockprops/default.txt";
+                if (!Directory.Exists("blockprops")) { Directory.CreateDirectory("blockprops"); }
+                if (File.Exists(blockPropsFile)) { File.Move(blockPropsFile, "blockprops/default_backup_from_before_nas_replaced_it.txt"); }
+                File.Move("plugins/default.txt", blockPropsFile);
+            }
+            
             NasPlayer.Setup();
             NasBlock.Setup();
-            NassEffect.Setup();
-            NasBlockChange.Setup();
+            if (!NassEffect.Setup()) { FailedLoad(); return; }
+            if (!NasBlockChange.Setup()) { FailedLoad(); return; }
             ItemProp.Setup();
             Crafting.Setup();
-            DynamicColor.Setup();
+            if (!DynamicColor.Setup()) { FailedLoad(); return; }
             Collision.Setup();
 
             OnPlayerConnectEvent.Register(OnPlayerConnect, Priority.High);
@@ -51,6 +104,9 @@ namespace NotAwesomeSurvival {
             OnPlayerCommandEvent.Register(OnPlayerCommand, Priority.High);
             NasGen.Setup();
             NasLevel.Setup();
+        }
+        static void FailedLoad() {
+            Player.Console.Message("NAS: FAILED to load plugin. Please follow the instructions found on github.");
         }
 
         public override void Unload(bool shutdown) {
@@ -67,7 +123,7 @@ namespace NotAwesomeSurvival {
         }
 
         static void OnPlayerConnect(Player p) {
-            Player.Console.Message("OnPlayerConnect");
+            //Player.Console.Message("OnPlayerConnect");
             string path = GetSavePath(p);
             NasPlayer np;
             if (File.Exists(path)) {
@@ -113,15 +169,17 @@ namespace NotAwesomeSurvival {
 
         }
         static void OnPlayerCommand(Player p, string cmd, string message, CommandData data) {
-            //if (cmd.CaselessEq("setall")) {
-            //    foreach (Command _cmd in Command.allCmds) {
-            //        //p.Message("name {0}", _cmd.name);
-            //        Command.Find("cmdset").Use(p, _cmd.name + " Operator");
-            //
-            //    }
-            //    p.cancelcommand = true;
-            //    return;
-            //}
+            if (cmd.CaselessEq("setall")) {
+                if (p.Rank < LevelPermission.Operator) { return; }
+                
+                foreach (Command _cmd in Command.allCmds) {
+                    //p.Message("name {0}", _cmd.name);
+                    Command.Find("cmdset").Use(p, _cmd.name + " Operator");
+            
+                }
+                p.cancelcommand = true;
+                return;
+            }
             
             if (cmd.CaselessEq("goto") && p.Rank < LevelPermission.Operator && data.Context != CommandContext.SendCmd) {
                 p.Message("You cannot use /goto manually. It is triggered automatically when you go to map borders.");

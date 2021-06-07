@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Text;
 using MCGalaxy;
@@ -14,11 +15,19 @@ namespace NotAwesomeSurvival {
         public static ColorDesc[] mediumHealthColors;
         public static ColorDesc[] lowHealthColors;
         public static ColorDesc[] direHealthColors;
-
-        public static void Setup() {
+        const string selectorImageName = "selectorColors.png";
+        public static bool Setup() {
+            if (File.Exists("plugins/" + selectorImageName)) {
+                File.Move("plugins/" + selectorImageName, Nas.Path + selectorImageName);
+            }
+            if (!File.Exists(Nas.Path + selectorImageName)) {
+                Player.Console.Message("Could not locate {0} (needed for tool health/selection colors)", selectorImageName);
+                return false;
+            }
+            
             Bitmap colorImage;
             colorImage = new Bitmap(Nas.Path + "selectorColors.png");
-
+            
             defaultColors = new ColorDesc[colorImage.Width];
             fullHealthColors = new ColorDesc[colorImage.Width];
             mediumHealthColors = new ColorDesc[colorImage.Width];
@@ -34,6 +43,7 @@ namespace NotAwesomeSurvival {
             colorImage.Dispose();
 
             task = Server.MainScheduler.QueueRepeat(Update, null, TimeSpan.FromMilliseconds(100));
+            return true;
         }
         static void SetupDescs(int yOffset, Bitmap colorImage, ref ColorDesc[] colorDescs) {
             for (int i = 0; i < colorImage.Width; i++) {

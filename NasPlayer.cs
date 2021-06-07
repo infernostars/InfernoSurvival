@@ -57,7 +57,7 @@ namespace NotAwesomeSurvival {
             inventory.SetPlayer(p);
         }
         public void HandleInteraction(MouseButton button, MouseAction action, ushort x, ushort y, ushort z, byte entityID, TargetBlockFace face) {
-            if (button == MouseButton.Right && p.RawHeldBlock != 0) {
+            if (button == MouseButton.Right && p.ClientHeldBlock != 0) {
                 ushort xPlacing = x; ushort yPlacing = y; ushort zPlacing = z;
     			if (face == TargetBlockFace.AwayX)    { xPlacing++; }
     			if (face == TargetBlockFace.TowardsX) { xPlacing--; }
@@ -250,8 +250,8 @@ namespace NotAwesomeSurvival {
         }
 
         public void UpdateHeldBlock() {
-            //p.RawHeldBlock is named wrong, it's actually serverBlockID, so we have to convert it to raw
-            BlockID clientBlockID = Block.ToRaw(p.RawHeldBlock);
+            //p.ClientHeldBlock is server block ID
+            BlockID clientBlockID = p.ConvertBlock(p.ClientHeldBlock);
             NasBlock nasBlock = NasBlock.Get(clientBlockID);
 
             if (nasBlock.parentID != heldNasBlock.parentID) {

@@ -191,9 +191,8 @@ namespace NotAwesomeSurvival {
                             return;
                         }
                         if (nasBlock.container.type != Container.Type.Gravestone) {
-                            np.p.Message("The {0} you're trying to access got looted and destroyed, but replaced because the thief got undone.",
-                                         nasBlock.container.name.ToLower() );
-                            np.p.Message("The stuff inside is lost, but you can make it functional again by %cdeleting%S then %breplacing%S it.");
+                            np.p.Message("(BUG) The data inside this {0} was lost, but you can make it functional again by %cdeleting%S then %breplacing%S it.",
+                                         nasBlock.container.name.ToLower());
                         }
                     }
                 };
@@ -234,8 +233,8 @@ namespace NotAwesomeSurvival {
             
             static void AddBlocks(NasPlayer np, Entity bEntity) {
                 Player p = np.p;
-                //RawHeldBlock is actually serverBlockID not client
-                BlockID clientBlockID = p.ConvertBlock(p.RawHeldBlock);
+                //p.ClientHeldBlock is server block ID
+                BlockID clientBlockID = p.ConvertBlock(p.ClientHeldBlock);
                 NasBlock nasBlock = NasBlock.Get(clientBlockID);
                 if (nasBlock.parentID == 0) {
                     p.Message("Select a block to store it.");
@@ -283,8 +282,8 @@ namespace NotAwesomeSurvival {
                     }
                     
                     BlockStack bs = null;
-                    
-                    BlockID clientBlockID = p.ConvertBlock(p.RawHeldBlock);
+                    //p.ClientHeldBlock is server block ID
+                    BlockID clientBlockID = p.ConvertBlock(p.ClientHeldBlock);
                     NasBlock nasBlock = NasBlock.Get(clientBlockID);
                     foreach (BlockStack stack in bEntity.drop.blockStacks) {
                         //if there's a stack in the container that matches what we're holding

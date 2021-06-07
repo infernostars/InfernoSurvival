@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.IO;
 using MCGalaxy;
 using MCGalaxy.Config;
 using MCGalaxy.Network;
@@ -6,28 +7,28 @@ using MCGalaxy.Network;
 namespace NotAwesomeSurvival {
 
     public class NassEffect { //lol
+        public const string Path = Nas.Path + "effects/";
         public static Effect breakMeter;
         public static Effect breakEarth;
         public static Effect breakLeaves;
         public static Effect[] breakEffects = new Effect[(int)NasBlock.Material.Count];
 
-        public static void Setup() {
+        public static bool Setup() {
             breakMeter = new Effect();
-            breakMeter.Load("breakmeter");
+            if (!breakMeter.Load("breakmeter")) { return false; }
 
             breakEarth = new Effect();
-            breakEarth.Load("breakdust");
+            if (!breakEarth.Load("breakdust")) { return false; }
 
             breakLeaves = new Effect();
-            breakLeaves.Load("breakleaf");
+            if (!breakLeaves.Load("breakleaf")) { return false; }
 
             //set default effect for all types
             for (int i = 0; i < (int)NasBlock.Material.Count; i++) {
                 breakEffects[i] = breakEarth;
             }
             breakEffects[(int)NasBlock.Material.Leaves] = breakLeaves;
-
-
+            return true;
         }
         const float notAllowedBelowZero = 0;
         public class Effect {
@@ -85,14 +86,20 @@ namespace NotAwesomeSurvival {
             //Filled in when loaded. Based on pixelSize
             public float offset;
             static ConfigElement[] cfg;
-            public void Load(string effectName) {
+            public bool Load(string effectName) {
+                string fileName = Path + effectName + ".properties";
+                string fileNameInPluginsDir = "plugins/" + effectName + ".properties";
+                if (File.Exists(fileNameInPluginsDir)) {
+                    File.Move(fileNameInPluginsDir, fileName);
+                }
+                
                 if (cfg == null) cfg = ConfigElement.GetAll(typeof(Effect));
-                ConfigElement.ParseFile(cfg, "effects/" + effectName + ".properties", this);
+                if (!ConfigElement.ParseFile(cfg, fileName, this)) {
+                    Player.Console.Message("NAS: Could not find required effect file {0}", effectName);
+                    return false;
+                }
                 offset = this.pixelSize / 32;
-            }
-            public void Save(string effectName) {
-                if (cfg == null) cfg = ConfigElement.GetAll(typeof(Effect));
-                ConfigElement.SerialiseSimple(cfg, "effects/" + effectName + ".properties", this);
+                return true;
             }
         }
 
