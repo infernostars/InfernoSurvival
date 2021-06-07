@@ -21,8 +21,14 @@ To install:
 If this works without any errors, you're done!
 
 ## Tips
+Press **Q** and **E** to move the selection on your toolbar. Press **R** to toggle toolbar opened. Press **M** to move tools in the toolbar. Press **X** to delete tools.
+
 It is very difficult to properly undo theft and grief in NAS. Therefore, the server is automatically set to whitelist-only by default.
 To allow you and your friends to play, add players to the whitelist with **/whitelist add [playername]+**
+
+It might be handy to change the spawnpoint of the main world, as it usually starts very high in the sky. You can do so with **/setspawn**
+
+If you have logs, you can place drawers to craft with. Logs and drawers are a shared resource. Use **/faq** to see the crafting guide image.
 
 **What has been implemented:**
 * Gathering limited blocks to build and craft with
