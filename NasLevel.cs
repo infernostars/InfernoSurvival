@@ -50,8 +50,11 @@ namespace NotAwesomeSurvival {
             blocksThatMustBeDisturbed.Clear();
             schedulerTask = TickScheduler.QueueRepeat(TickLevelCallback, this, tickDelay);
         }
+        // /newlvl eb_0,0 384 256 384 nasgen ee
         public void EndTickTask() {
+            if (TickScheduler == null) TickScheduler = new Scheduler("NasLevelTickScheduler");
             TickScheduler.Cancel(schedulerTask);
+            
             Player.Console.Message("Saving {0} blocks to re-disturb later.", tickQueue.Count);
             if (tickQueue.Count == 0) { return; }
             

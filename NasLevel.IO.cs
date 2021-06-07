@@ -51,6 +51,7 @@ namespace NotAwesomeSurvival {
                 //Player.Console.Message("This has to be filled in before NasLevels can work");
                 return;
             }
+            //Player.Console.Message("CALLING OnLevelLoaded for {0}", lvl.name);
             NasLevel nl = new NasLevel();
             string fileName = GetFileName(lvl.name);
             if (File.Exists(fileName)) {

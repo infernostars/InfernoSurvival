@@ -32,41 +32,46 @@ namespace NotAwesomeSurvival {
         public static string GetSavePath(Player p) {
             return SavePath + p.name + ".json";
         }
-
+        public static bool firstEverPluginLoad = true;
         public override void Load(bool startup) {
             if (Block.Props.Length != 1024) { //check for TEN_BIT_BLOCKS. Value is 512 on a default instance of MCGalaxy.
                 Player.Console.Message("NAS: FAILED to load plugin. In order to run NAS, you must be using a version of MCGalaxy which allows 767 blocks.");
                 Player.Console.Message("NAS: You can find instructions for 767 blocks here: https://github.com/UnknownShadow200/MCGalaxy/tree/master/Uploads (infid)");
                 return;
             }
-            if (File.Exists("plugins/Newtonsoft.Json.dll")) {
-                Player.Console.Message("json exists in plugins");
-                Thread.Sleep(20 * 1000);
+            
+            if (File.Exists("plugins/Newtonsoft.Json")) {
                 if (!File.Exists("Newtonsoft.Json.dll")) {
-                    Player.Console.Message("json does not exist in server");
-                    File.Move("plugins/Newtonsoft.Json.dll", "Newtonsoft.Json.dll");
+                    File.Move("plugins/Newtonsoft.Json", "Newtonsoft.Json.dll");
                 }
                 else {
-                    Player.Console.Message("deleting json from plugins because it already exists in server");
-                    File.Delete("plugins/Newtonsoft.Json.dll");
+                    File.Delete("plugins/Newtonsoft.Json");
                 }
             }
-            
-            if (!Directory.Exists(Nas.Path)) {
-                Directory.CreateDirectory(Nas.Path);
-            }
-            if (!Directory.Exists(NasLevel.Path)) {
-                Directory.CreateDirectory(NasLevel.Path);
-            }
-            if (!Directory.Exists(Nas.SavePath)) {
-                Directory.CreateDirectory(Nas.SavePath);
-            }
-            if (!Directory.Exists(NassEffect.Path)) {
-                Directory.CreateDirectory(NassEffect.Path);
+            if (!File.Exists("Newtonsoft.Json.dll")) {
+                Player.Console.Message("NAS: FAILED to load plugin. Could not find Newtonsoft.Json.dll"); return;
             }
             
-            if (File.Exists("plugins/global.json")) {
-                Server.Config.DefaultTexture = textureURL; //just do it here so it only happens once... allowing the user to change it later
+            
+            if (!Directory.Exists(Nas.Path)) { Directory.CreateDirectory(Nas.Path); }
+            if (!Directory.Exists(NasLevel.Path)) { Directory.CreateDirectory(NasLevel.Path); }
+            if (!Directory.Exists(Nas.SavePath)) { Directory.CreateDirectory(Nas.SavePath); }
+            if (!Directory.Exists(NassEffect.Path)) { Directory.CreateDirectory(NassEffect.Path); }
+            if (!Directory.Exists("blockprops")) { Directory.CreateDirectory("blockprops"); }
+            
+            //I HATE IT
+            MoveFile("global.json", "blockdefs/global.json"); //blockdefs
+            MoveFile("default.txt", "blockprops/default.txt"); //blockprops
+            MoveFile("customcolors.txt", "text/customcolors.txt"); //custom chat colors
+            MoveFile("command.properties", "properties/command.properties"); //command permissions
+            MoveFile("ExtraCommandPermissions.properties", "properties/ExtraCommandPermissions.properties"); //extra command permissions
+            MoveFile("ranks.properties", "properties/ranks.properties"); //ranks
+            
+            if (firstEverPluginLoad) {
+                Server.Config.DefaultTexture = textureURL;
+                Server.Config.DefaultColor = "&7";
+                Server.Config.verifyadmins = false;
+                Server.Config.WhitelistedOnly = true;
                 Server.Config.EdgeLevel = 60;
                 Server.Config.SidesOffset = -200;
                 Server.Config.CloudsHeight = 200;
@@ -74,18 +79,9 @@ namespace NotAwesomeSurvival {
                 Server.Config.SkyColor = "#1489FF";
                 Server.Config.ShadowColor = "#888899";
                 SrvProperties.Save();
-                
-                const string blockDefFile = "blockdefs/global.json";
-                if (File.Exists(blockDefFile)) { File.Move(blockDefFile, "blockdefs/global_backup_from_before_nas_replaced_it.json"); }
-                File.Move("plugins/global.json", blockDefFile);
             }
-            if (File.Exists("plugins/default.txt")) {
-                const string blockPropsFile = "blockprops/default.txt";
-                if (!Directory.Exists("blockprops")) { Directory.CreateDirectory("blockprops"); }
-                if (File.Exists(blockPropsFile)) { File.Move(blockPropsFile, "blockprops/default_backup_from_before_nas_replaced_it.txt"); }
-                File.Move("plugins/default.txt", blockPropsFile);
-            }
-            
+            //I HATE IT
+
             NasPlayer.Setup();
             NasBlock.Setup();
             if (!NassEffect.Setup()) { FailedLoad(); return; }
@@ -104,6 +100,17 @@ namespace NotAwesomeSurvival {
             OnPlayerCommandEvent.Register(OnPlayerCommand, Priority.High);
             NasGen.Setup();
             NasLevel.Setup();
+            
+        }
+        static void MoveFile(string pluginFile, string destFile) {
+            pluginFile = "plugins/"+pluginFile;
+            if (File.Exists(pluginFile)) {
+                if (File.Exists(destFile)) { File.Delete(destFile); }
+                File.Move(pluginFile, destFile);
+            }
+            else {
+                firstEverPluginLoad = false;
+            }
         }
         static void FailedLoad() {
             Player.Console.Message("NAS: FAILED to load plugin. Please follow the instructions found on github.");
