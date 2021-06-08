@@ -7,10 +7,10 @@ An MCGalaxy plugin I coded to see how far I could get with my own take on surviv
 |--|
 [:arrow_down: Not Awesome Survival plugin](/assets/assets.zip?raw=true)|ag
 ## Installation
-In order to run a server with NAS, it is **heavily recommended** that you start with a completely fresh [MCGalaxy download.](https://github.com/UnknownShadow200/MCGalaxy)
+In order to run a server with NAS, it is **heavily recommended** that you start with a completely fresh [MCGalaxy download.](https://123dmwm.com/MCGalaxy/)
 This is because NAS has a bunch of custom blocks and configuration that **WILL OVERWRITE** what you had before.
 
-You will also need to use the "infid" version of MCGalaxy_.dll which allows for 767 blocks, which can be found [here.](https://github.com/UnknownShadow200/MCGalaxy/tree/master/Uploads)
+~~You will also need to use the "infid" version of MCGalaxy_.dll which allows for 767 blocks.~~ The download above already includes support for 767 blocks.
 
 To install:
 1. Run your server once to generate the folders, if you haven't already.
