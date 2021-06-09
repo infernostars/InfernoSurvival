@@ -66,6 +66,10 @@ namespace NotAwesomeSurvival {
             MoveFile("command.properties", "properties/command.properties"); //command permissions
             MoveFile("ExtraCommandPermissions.properties", "properties/ExtraCommandPermissions.properties"); //extra command permissions
             MoveFile("ranks.properties", "properties/ranks.properties"); //ranks
+            MoveFile("faq.txt", "text/faq.txt"); //faq
+            MoveFile("messages.txt", "text/messages.txt"); //messages
+            MoveFile("welcome.txt", "text/welcome.txt"); //welcome
+            
             
             if (firstEverPluginLoad) {
                 Server.Config.DefaultTexture = textureURL;
@@ -101,6 +105,28 @@ namespace NotAwesomeSurvival {
             NasGen.Setup();
             NasLevel.Setup();
             
+            
+            if (Nas.firstEverPluginLoad) {
+                //Player.Console.Message("GENERATING NEW MAP FIRST TIME EVER also main is {0}", lvl.name);
+                int chunkOffsetX = 0, chunkOffsetZ = 0;
+                string seed = "DEFAULT";
+                if (!NasGen.GetSeedAndChunkOffset(Server.mainLevel.name, ref seed, ref chunkOffsetX, ref chunkOffsetZ)) {
+                    Player.Console.Message("NAS: main level is not a NAS level, generating a NAS level to replace it!");
+                    seed = new Sharkbite.Irc.NameGenerator().MakeName().ToLower();
+                    string mapName = seed+"_0,0";
+                    Command.Find("newlvl").Use(Player.Console,
+                                               mapName +
+                                               " " + NasGen.mapWideness +
+                                               " " + NasGen.mapTallness +
+                                               " " + NasGen.mapWideness +
+                                               " nasgen " + seed);
+                    Server.Config.MainLevel = mapName;
+                    SrvProperties.Save();
+                    //Server.SetMainLevel(mapName);
+                    Thread.Sleep(1000);
+                    Server.Stop(true, "A server restart is required to initialize NAS plugin.");
+                }
+            }
         }
         static void MoveFile(string pluginFile, string destFile) {
             pluginFile = "plugins/"+pluginFile;

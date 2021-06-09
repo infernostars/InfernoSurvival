@@ -15,36 +15,9 @@ namespace NotAwesomeSurvival {
         public static class Collision {
             
             public static void Setup() {
-                OnLevelLoadedEvent.Register(OnLevelLoaded, Priority.Low);
+                SetupBlockBounds(Server.mainLevel);
             }
-            static void OnLevelLoaded(Level lvl) {
-                if (lvl.name == Server.Config.MainLevel) {
-                    OnLevelLoadedEvent.Unregister(OnLevelLoaded);
-                    SetupBlockBounds(lvl);
-                    
-                    if (Nas.firstEverPluginLoad) {
-                        //Player.Console.Message("GENERATING NEW MAP FIRST TIME EVER also main is {0}", lvl.name);
-                        int chunkOffsetX = 0, chunkOffsetZ = 0;
-                        string seed = "DEFAULT";
-                        if (!NasGen.GetSeedAndChunkOffset(lvl.name, ref seed, ref chunkOffsetX, ref chunkOffsetZ)) {
-                            Player.Console.Message("NAS: main level is not a NAS level, generating a NAS level to replace it!");
-                            seed = new Sharkbite.Irc.NameGenerator().MakeName().ToLower();
-                            string mapName = seed+"_0,0";
-                            Command.Find("newlvl").Use(Player.Console,
-                                                       mapName +
-                                                       " " + NasGen.mapWideness +
-                                                       " " + NasGen.mapTallness +
-                                                       " " + NasGen.mapWideness +
-                                                       " nasgen " + seed);
-                            Server.Config.MainLevel = mapName;
-                            SrvProperties.Save();
-                            //Server.SetMainLevel(mapName);
-                            Thread.Sleep(1000);
-                            Server.Stop(true, "A server restart is required to initialize NAS plugin.");
-                        }
-                    }
-                }
-            }
+            
             public static void SetupBlockBounds(Level lvl) {
                 NasBlock.blocksIndexedByServerBlockID = new NasBlock[Block.ExtendedCount];
                 for (BlockID blockID = 0; blockID < Block.ExtendedCount; blockID++) {
