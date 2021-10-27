@@ -21,7 +21,7 @@ using MCGalaxy.Network;
 namespace NotAwesomeSurvival {
 
     public sealed class Nas : Plugin {
-        public override string name { get { return "nas"; } }
+        public override string name { get { return "nasT"; } }
         public override string MCGalaxy_Version { get { return "1.9.2.5"; } }
         public override string creator { get { return "goodly"; } }
         const string textureURL = "https://dl.dropbox.com/s/xum0t6ld9g489ax/nas.zip";

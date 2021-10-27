@@ -35,7 +35,7 @@ namespace NotAwesomeSurvival {
             for (BlockID blockID = 0; blockID <= Block.MaxRaw; blockID++) {
                 BlockDefinition def = BlockDefinition.GlobalDefs[Block.FromRaw(blockID)];
 
-                if (def == null && blockID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(blockID)); }
+                if (def == null && blockID < Block.CPE_COUNT) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(blockID)); }
                 if (def == null) {
                     blockColors[blockID] = Color.White; continue;
                 }
@@ -373,7 +373,7 @@ namespace NotAwesomeSurvival {
                 meterInfo.z = z;
 
                 BlockDefinition def = BlockDefinition.GlobalDefs[Block.FromRaw(clientBlockID)];
-                if (def == null && clientBlockID < Block.CpeCount) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(clientBlockID)); }
+                if (def == null && clientBlockID < Block.CPE_COUNT) { def = DefaultSet.MakeCustomBlock(Block.FromRaw(clientBlockID)); }
                 if (def != null) {
                     if (face == TargetBlockFace.AwayX) { DoOffset(def.MaxX, true, ref meterInfo.x); }
                     if (face == TargetBlockFace.TowardsX) { DoOffset(def.MinX, false, ref meterInfo.x); }
